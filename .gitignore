@@ -1,4 +1,5 @@
 users.json
+credentials.json
 # Logs
 logs
 *.log
