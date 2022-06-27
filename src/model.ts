@@ -79,6 +79,11 @@ export default class Model {
         const model = fs.readFileSync(this.modelFilePath, ENCODING_TYPE);
         this.JSONModel = JSON.parse(model);
 
+        const isUsersFileExist = fs.existsSync(this.userModelFilePath);
+        if (!isUsersFileExist) {
+            fs.writeFileSync(this.userModelFilePath, '{}');
+        }
+
         const userModel = fs.readFileSync(this.userModelFilePath, ENCODING_TYPE);
         this.userJSONModel = JSON.parse(userModel);
     }
