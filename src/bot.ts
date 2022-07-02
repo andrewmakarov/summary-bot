@@ -43,8 +43,8 @@ export default class Bot {
         if (process.env.NODE_ENV === 'production') {
             this.bot.launch({
                 webhook: {
-                    domain: 'https://family-summary-telegram-bot.herokuapp.com',
-                    port: parseInt(process.env.PORT || '0', 10) || 5000,
+                    domain: process.env.URL,
+                    port: parseInt(process.env.PORT!, 10) || 5000,
                 },
             });
         } else {
@@ -80,8 +80,6 @@ export default class Bot {
             } catch (e) {
                 console.log(e);
             }
-
-            console.log('start');
         });
 
         this.bot.on('text', (ctx) => {
