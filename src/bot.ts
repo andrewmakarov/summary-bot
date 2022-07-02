@@ -39,7 +39,17 @@ export default class Bot {
         this.messageCache = new Map();
 
         this.subscribe();
-        this.bot.launch();
+
+        if (process.env.NODE_ENV === 'production') {
+            this.bot.launch({
+                webhook: {
+                    domain: process.env.HEROKU_UR,
+                    port: parseInt(process.env.PORT || '0', 10) || 5000,
+                },
+            });
+        } else {
+            this.bot.launch();
+        }
     }
 
     private subscribe() {
