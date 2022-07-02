@@ -72,10 +72,16 @@ export default class Bot {
 
             // console.log(ctx.from?.id);
 
-            const text = await this.tryPushAmountAndGetText(ctx.callbackQuery.data, ctx.from?.username);
+            try {
+                const text = await this.tryPushAmountAndGetText(ctx.callbackQuery.data, ctx.from?.username);
 
-            await ctx.editMessageText(text, { parse_mode: 'Markdown' });
-            await ctx.answerCbQuery();
+                await ctx.editMessageText(text, { parse_mode: 'Markdown' });
+                await ctx.answerCbQuery();
+            } catch (e) {
+                console.log(e);
+            }
+
+            console.log('start');
         });
 
         this.bot.on('text', (ctx) => {
