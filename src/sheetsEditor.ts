@@ -36,23 +36,16 @@ export default class SheetsEditor {
             sheet = await (sampleSheetName as any).duplicate({
                 title: monthName,
             });
-
-            const categoriesWithoutDate = this.model.categories.map((c) => c.text);
-            const finalCategories = [this.model.dateColumn.text, ...categoriesWithoutDate];
-
-            await sheet.setHeaderRow(finalCategories, headerRowIndex); // TODO
-        } else {
-            await sheet.loadHeaderRow(headerRowIndex);
         }
+
+        await sheet.loadHeaderRow(headerRowIndex);
 
         return sheet;
     }
 
-    async pushAmount(amount: number, categoryIndex: number, description: string, userId: number = 0) {
+    async pushAmount(amount: number, categoryIndex: number, description: string, userName: string = '') {
         const document = await this.createDocument();
         const sheet = await this.getOrCreateSheet(document);
-
-        const userName = this.model.users[userId];
         const newDescription = `${userName}: ${description}`;
 
         await this.pushAmountCore(sheet, amount, categoryIndex, newDescription);

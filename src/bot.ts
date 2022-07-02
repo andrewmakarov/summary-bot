@@ -47,7 +47,7 @@ export default class Bot {
             const { from } = ctx.message;
 
             const name = `${from.first_name} ${from.last_name}`;
-            this.model.addUser(from.id, name);
+            // this.model.addUser(from.id, name);
 
             ctx.reply(`Hi ${name},\nWelcome to summary bot`);
         });
@@ -62,7 +62,7 @@ export default class Bot {
 
             // console.log(ctx.from?.id);
 
-            const text = await this.tryPushAmountAndGetText(ctx.callbackQuery.data, ctx.from?.id);
+            const text = await this.tryPushAmountAndGetText(ctx.callbackQuery.data, ctx.from?.username);
 
             await ctx.editMessageText(text, { parse_mode: 'Markdown' });
             await ctx.answerCbQuery();
@@ -96,7 +96,7 @@ export default class Bot {
         return undefined;
     }
 
-    private async tryPushAmountAndGetText(callbackDate?: string, userId?: number) {
+    private async tryPushAmountAndGetText(callbackDate?: string, userName?: string) {
         if (callbackDate) {
             const [key, categoriesIndexRaw] = callbackDate.split('_');
 
@@ -106,7 +106,7 @@ export default class Bot {
                 const category = this.model.categories[categoriesIndex];
 
                 try {
-                    await this.sheetsEditor.pushAmount(data.amount, categoriesIndex, data.description, userId);
+                    await this.sheetsEditor.pushAmount(data.amount, categoriesIndex, data.description, userName);
                     return getSuccessAmountText(data.amount, category.text);
                 } catch (e) {
                     return (e as Error).message;

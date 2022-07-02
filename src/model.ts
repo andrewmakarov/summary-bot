@@ -88,12 +88,12 @@ export default class Model {
         this.userJSONModel = JSON.parse(userModel);
     }
 
-    addUser(id: number, name: string) {
-        const idString = id.toString();
+    // addUser(id: number, name: string) {
+    //     const idString = id.toString();
 
-        if (!this.userJSONModel[idString]) {
-            this.userJSONModel[idString] = name;
-            fs.writeFileSync(this.userModelFilePath, JSON.stringify(this.userJSONModel), { encoding: ENCODING_TYPE });
-        }
-    }
+    //     if (!this.userJSONModel[idString]) {
+    //         this.userJSONModel[idString] = name;
+    //         fs.writeFileSync(this.userModelFilePath, JSON.stringify(this.userJSONModel), { encoding: ENCODING_TYPE });
+    //     }
+    // }
 }
