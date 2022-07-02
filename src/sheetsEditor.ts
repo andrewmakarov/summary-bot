@@ -97,7 +97,7 @@ export default class SheetsEditor {
 
         const categoryObject = this.model.categories[categoryIndex];
 
-        result[this.model.dateColumn.text] = (new Date()).toDateString();
+        result[this.model.dateColumn.text] = '=TODAY()';
         result[categoryObject.text] = amount;
 
         return result;
