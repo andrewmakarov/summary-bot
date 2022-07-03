@@ -1,5 +1,4 @@
 import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
-import { TODAY_FUNCTION } from './constants';
 import Model, { ICategory } from './model';
 
 interface IRowData {
@@ -89,7 +88,7 @@ export default class SheetsEditor {
         const result: IRowData = {};
         const category = this.model.categories[categoryIndex];
 
-        result[this.model.dateColumn.text] = TODAY_FUNCTION;
+        result[this.model.dateColumn.text] = (new Date()).toDateString();
         result[category.text] = amount;
 
         return result;

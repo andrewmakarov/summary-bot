@@ -7,7 +7,7 @@ import {
     amountEnteredWrongFormatText, cacheIsEmptyText, countrySheetChoiceText, errorInCallbackQueryText, getSuccessAmountText, selectCategoryText, timeExpiredText, tryingAddDAmountText,
 } from './textUtils';
 
-const DELETE_CACHE_TIMER_VALUE = 45000;
+const DELETE_CACHE_TIMER_VALUE = 60000;
 
 interface ICacheItem {
     amount: number;
