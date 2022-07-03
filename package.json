@@ -5,10 +5,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint . --ext .ts --fix",
-    "start": "npx ts-node src/main.ts -p $PORT",
+    "start": "npx ts-node src/main.ts",
     "dev": "npx ts-node-dev src/main.ts"
   },
-  "author": "",
+  "author": "Andrew Makarov",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.0.1",

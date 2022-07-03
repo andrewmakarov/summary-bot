@@ -4,3 +4,7 @@ export const selectCategoryText = 'Выбери категорию';
 export const tryingAddDAmountText = '✍️Пытаюсь добавить данные✍️';
 export const errorInCallbackQueryText = 'Ошибка в *callback_query*';
 export const cacheIsEmptyText = 'Не нашелся обьект в кеше';
+export const countrySheetChoiceText = 'Какая страна?';
+export const armeniaSheetText = 'Армения';
+export const russiaSheetText = 'Россия';
+export const timeExpiredText = 'Я не дождалься, начни сначала';

@@ -4,12 +4,15 @@ import Model from './model';
 import { createModelLayout } from './modelLayoutCreator';
 import SheetsEditor from './sheetsEditor';
 import {
-    amountEnteredWrongFormatText, cacheIsEmptyText, errorInCallbackQueryText, getSuccessAmountText, selectCategoryText, tryingAddDAmountText,
+    amountEnteredWrongFormatText, cacheIsEmptyText, countrySheetChoiceText, errorInCallbackQueryText, getSuccessAmountText, selectCategoryText, timeExpiredText, tryingAddDAmountText,
 } from './textUtils';
+
+const DELETE_CACHE_TIMER_VALUE = 5000;
 
 interface ICacheItem {
     amount: number;
     description: string;
+    documentIndex?: number;
 }
 
 const getAmount = (text: string): [number, string] => {
@@ -62,65 +65,84 @@ export default class Bot {
             ctx.reply(`Hi ${name},\nWelcome to summary bot`);
         });
 
-        // this.bot.hears('hi', (ctx) => ctx.reply('Hey there'));
-
         this.bot.on('callback_query', async (ctx) => {
-            await ctx.editMessageText(tryingAddDAmountText, {
-                parse_mode: 'Markdown',
-                reply_markup: undefined,
-            });
+            const callbackQuery = ctx.callbackQuery.data || '';
 
-            // console.log(ctx.from?.id);
+            if (callbackQuery.startsWith('c|')) {
+                const [_, documentIndexRaw, guid] = callbackQuery.split('|');
 
-            try {
-                const text = await this.tryPushAmountAndGetText(ctx.callbackQuery.data, ctx.from?.username);
+                const value = this.messageCache.get(guid);
+                if (value) {
+                    const documentIndex = parseInt(documentIndexRaw, 10);
+                    this.messageCache.set(guid, { ...value, documentIndex });
+                    const keyboardLayout = createModelLayout(this.model).createCategories(guid);
 
-                await ctx.editMessageText(text, { parse_mode: 'Markdown' });
-                await ctx.answerCbQuery();
-            } catch (e) {
-                console.log(e);
+                    if (keyboardLayout) {
+                        ctx.editMessageText(selectCategoryText, {
+                            reply_markup: { inline_keyboard: keyboardLayout },
+                        });
+
+                        ctx.answerCbQuery(`Будет записано в ${this.model.documents[documentIndex].text}`);
+                    } else {
+                        console.log('Cache is empty');
+                    }
+                }
+            } else {
+                await ctx.editMessageText(tryingAddDAmountText, {
+                    parse_mode: 'Markdown',
+                    reply_markup: undefined,
+                });
+
+                try {
+                    const text = await this.tryPushAmountAndGetText(ctx.callbackQuery.data, ctx.from?.username);
+
+                    await ctx.editMessageText(text, { parse_mode: 'Markdown' });
+                    await ctx.answerCbQuery();
+                } catch (e) {
+                    console.log(e);
+                }
             }
         });
 
-        this.bot.on('text', (ctx) => {
-            const keyboardLayout = this.tryCreateCategoryKeyboardLayout(ctx.message.text);
+        this.bot.on('text', async (ctx) => {
+            const [amount, description] = getAmount(ctx.message.text);
+            const isValid = !Number.isNaN(amount) && description !== '';
 
-            if (keyboardLayout) {
-                ctx.reply(selectCategoryText, {
-                    reply_markup: { inline_keyboard: keyboardLayout },
+            if (isValid) {
+                const guid = v1();
+                this.messageCache.set(guid, { amount, description });
+
+                const message = await ctx.reply(countrySheetChoiceText, {
+                    reply_markup: {
+                        inline_keyboard: createModelLayout(this.model).createDocuments(guid),
+                    },
                 });
+
+                setTimeout(() => {
+                    if (this.messageCache.delete(guid)) {
+                        ctx.deleteMessage(message.message_id);
+                        ctx.reply(timeExpiredText);
+                    }
+                }, DELETE_CACHE_TIMER_VALUE);
             } else {
                 ctx.reply(amountEnteredWrongFormatText, { parse_mode: 'Markdown' });
             }
         });
     }
 
-    private tryCreateCategoryKeyboardLayout(text: string) {
-        const [amount, description] = getAmount(text);
-        const isValid = !Number.isNaN(amount) && description !== '';
-
-        if (isValid) {
-            const key = v1();
-            this.messageCache.set(key, { amount, description });
-            // TODO this.messageCache.delete(key);
-
-            return createModelLayout(this.model).getCategories(key);
-        }
-
-        return undefined;
-    }
-
     private async tryPushAmountAndGetText(callbackDate?: string, userName?: string) {
         if (callbackDate) {
-            const [key, categoriesIndexRaw] = callbackDate.split('_');
+            const [guid, categoriesIndexRaw] = callbackDate.split('|');
 
-            const data = this.messageCache.get(key);
+            const data = this.messageCache.get(guid);
             if (data) {
                 const categoriesIndex = parseInt(categoriesIndexRaw, 10);
                 const category = this.model.categories[categoriesIndex];
 
                 try {
-                    await this.sheetsEditor.pushAmount(data.amount, categoriesIndex, data.description, userName);
+                    const documentId = this.model.documents[data.documentIndex || 0].id;
+
+                    await this.sheetsEditor.pushAmount(documentId!, data.amount, categoriesIndex, data.description, userName);
                     return getSuccessAmountText(data.amount, category.text);
                 } catch (e) {
                     return (e as Error).message;

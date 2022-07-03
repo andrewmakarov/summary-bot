@@ -1,4 +1,5 @@
 import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
+import { TODAY_FUNCTION } from './constants';
 import Model, { ICategory } from './model';
 
 interface IRowData {
@@ -12,8 +13,8 @@ export default class SheetsEditor {
         this.model = model;
     }
 
-    async createDocument() {
-        const result = new GoogleSpreadsheet(process.env.SPREADSHEET_ID);
+    async createDocument(documentId: string) {
+        const result = new GoogleSpreadsheet(documentId);
 
         await result.useServiceAccountAuth({
             client_email: process.env.CLIENT_EMAIL!,
@@ -27,14 +28,16 @@ export default class SheetsEditor {
 
     async getOrCreateSheet(document: GoogleSpreadsheet) {
         const monthName = this.model.months[(new Date()).getMonth()];
+        const sheetName = `${monthName}/${(new Date()).getFullYear()}`;
+
         const { headerRowIndex } = this.model;
 
-        let sheet = document.sheetsByTitle[monthName];
+        let sheet = document.sheetsByTitle[sheetName];
         if (!sheet) {
             const sampleSheetName = document.sheetsByTitle[this.model.modelSheetName];
 
             sheet = await (sampleSheetName as any).duplicate({
-                title: monthName,
+                title: sheetName,
             });
         }
 
@@ -43,8 +46,8 @@ export default class SheetsEditor {
         return sheet;
     }
 
-    async pushAmount(amount: number, categoryIndex: number, description: string, userName: string = '') {
-        const document = await this.createDocument();
+    async pushAmount(documentId: string, amount: number, categoryIndex: number, description: string, userName: string = '') {
+        const document = await this.createDocument(documentId);
         const sheet = await this.getOrCreateSheet(document);
         const newDescription = `${userName}: ${description}`;
 
@@ -52,7 +55,6 @@ export default class SheetsEditor {
     }
 
     private async pushAmountCore(sheet: GoogleSpreadsheetWorksheet, amount: number, categoryIndex: number, description: string) {
-        const { dateColumn } = this.model;
         const category = this.model.categories[categoryIndex];
 
         const cells = this.createCells(amount, categoryIndex);
@@ -60,25 +62,16 @@ export default class SheetsEditor {
 
         await sheet.loadCells();
 
-        this.updateAmountCell(sheet, category, rowIndex, description);
-        this.updateDateCell(sheet, dateColumn, rowIndex);
+        this.writeDescriptionToComment(sheet, category, rowIndex, description);
         this.fillCellsBackGround(sheet, rowIndex);
 
         await sheet.saveUpdatedCells();
         await sheet.resetLocalCache(false);
     }
 
-    private updateAmountCell(sheet: GoogleSpreadsheetWorksheet, category: ICategory, rowIndex: number, description: string) {
+    private writeDescriptionToComment(sheet: GoogleSpreadsheetWorksheet, category: ICategory, rowIndex: number, description: string) {
         const result = sheet.getCellByA1(`${category.key}${rowIndex}`);
         result.note = description;
-        result.numberFormat = this.model.defaultFormat;
-        result.horizontalAlignment = 'LEFT';
-    }
-
-    private updateDateCell(sheet: GoogleSpreadsheetWorksheet, dateColumn: ICategory, rowIndex: number) {
-        const result = sheet.getCellByA1(`${dateColumn.key}${rowIndex}`);
-        result.numberFormat = dateColumn.format!;
-        result.horizontalAlignment = 'LEFT';
     }
 
     private fillCellsBackGround(sheet: GoogleSpreadsheetWorksheet, rowIndex: number) {
@@ -94,11 +87,10 @@ export default class SheetsEditor {
 
     private createCells(amount:number, categoryIndex: number) {
         const result: IRowData = {};
+        const category = this.model.categories[categoryIndex];
 
-        const categoryObject = this.model.categories[categoryIndex];
-
-        result[this.model.dateColumn.text] = '=TODAY()';
-        result[categoryObject.text] = amount;
+        result[this.model.dateColumn.text] = TODAY_FUNCTION;
+        result[category.text] = amount;
 
         return result;
     }
