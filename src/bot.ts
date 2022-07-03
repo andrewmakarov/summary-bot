@@ -7,7 +7,7 @@ import {
     amountEnteredWrongFormatText, cacheIsEmptyText, countrySheetChoiceText, errorInCallbackQueryText, getSuccessAmountText, selectCategoryText, timeExpiredText, tryingAddDAmountText,
 } from './textUtils';
 
-const DELETE_CACHE_TIMER_VALUE = 40000;
+const DELETE_CACHE_TIMER_VALUE = 45000;
 
 interface ICacheItem {
     amount: number;
@@ -94,7 +94,10 @@ export default class Bot {
                 });
 
                 try {
-                    const text = await this.tryPushAmountAndGetText(ctx.callbackQuery.data, ctx.from?.username);
+                    const [guid] = callbackQuery.split('|');
+                    const text = await this.tryPushAmountAndGetText(callbackQuery, ctx.from?.username);
+
+                    this.messageCache.delete(guid);
 
                     await ctx.editMessageText(text, { parse_mode: 'Markdown' });
                     await ctx.answerCbQuery();
