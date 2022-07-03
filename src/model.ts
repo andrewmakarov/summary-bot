@@ -2,6 +2,7 @@ import fs from 'fs';
 import { Color, NumberFormat } from 'google-spreadsheet';
 import path from 'path';
 import { MODEL_PATH, USER_MODEL_PATH } from './constants';
+import { armeniaSheetText, russiaSheetText } from './textUtils';
 
 const ENCODING_TYPE = 'utf8';
 
@@ -12,7 +13,6 @@ export interface IUsersModel {
 export interface ICategory {
     key: string;
     text: string;
-    format?: NumberFormat;
 }
 
 export interface IModel {
@@ -39,10 +39,6 @@ export default class Model {
         return this.JSONModel.rowColors;
     }
 
-    get defaultFormat() {
-        return this.JSONModel.defaultFormat;
-    }
-
     get headerRowIndex() {
         return this.JSONModel.headerRowIndex;
     }
@@ -65,6 +61,16 @@ export default class Model {
 
     get users() {
         return this.userJSONModel;
+    }
+
+    get documents() {
+        return [{
+            text: armeniaSheetText,
+            id: process.env.ARMENIA_SPREADSHEET_ID,
+        }, {
+            text: russiaSheetText,
+            id: process.env.MAIN_SPREADSHEET_ID,
+        }];
     }
 
     private get modelFilePath() {

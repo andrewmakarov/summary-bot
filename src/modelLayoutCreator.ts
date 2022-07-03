@@ -6,7 +6,8 @@ export interface ILayoutCategory {
 }
 
 export interface IModelLayoutCreator {
-    getCategories(guid: string): ILayoutCategory[][];
+    createCategories(guid: string): ILayoutCategory[][];
+    createDocuments(guid: string): { text: string, callback_data: string }[][];
 }
 
 class ModelLayoutCreator implements IModelLayoutCreator {
@@ -16,15 +17,31 @@ class ModelLayoutCreator implements IModelLayoutCreator {
         this.model = model;
     }
 
-    getCategories(guid: string) { // TODO rename
-        return this.model.categories.map((category, index) => {
+    createCategories(guid: string) { // TODO rename
+        const resultArray: ILayoutCategory[][] = [];
+
+        this.model.categories.forEach((category, index) => {
             const result = {
                 text: category.text,
-                callback_data: `${guid}_${index.toString()}`,
+                callback_data: `${guid}|${index}`,
             };
 
-            return [result];
+            if (index % 2 === 0) {
+                resultArray.push([]);
+            }
+
+            const row = resultArray[resultArray.length - 1 || 0];
+            row.push(result);
         });
+
+        return resultArray;
+    }
+
+    createDocuments(guid: string) {
+        return [this.model.documents.map((document, index) => ({
+            text: document.text,
+            callback_data: `c|${index}|${guid}`,
+        }))];
     }
 }
 

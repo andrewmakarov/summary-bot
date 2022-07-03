@@ -16,15 +16,7 @@
     "modelSheetName": "Sample",
     "dateColumnName": {
         "key": "A",
-        "text": "Дата",
-        "format": {
-            "type": "DATE",
-            "pattern": "d, dddd"
-        }
-    },
-    "defaultFormat": {
-        "type": "CURRENCY",
-        "pattern": ""
+        "text": "Дата"
     },
     "headerRowIndex": 9,
     "categories": [{
