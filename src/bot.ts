@@ -85,6 +85,7 @@ export default class Bot {
                         ctx.answerCbQuery(`Будет записано в ${this.model.documents[documentIndex].text}`);
                     } else {
                         console.log('Cache is empty');
+                        console.log('!!!');
                     }
                 }
             } else {
