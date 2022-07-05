@@ -7,7 +7,7 @@
     "lint": "eslint . --ext .ts --fix",
     "start": "npx ts-node src/main.ts",
     "dev": "npx ts-node-dev src/main.ts",
-    "bundle": "tsc"
+    "build": "tsc"
   },
   "author": "Andrew Makarov",
   "license": "ISC",
