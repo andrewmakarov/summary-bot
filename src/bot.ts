@@ -6,6 +6,7 @@ import SheetsEditor from './sheetsEditor';
 import {
     amountEnteredWrongFormatText, cacheIsEmptyText, countrySheetChoiceText, errorInCallbackQueryText, getSuccessAmountText, selectCategoryText, timeExpiredText, tryingAddDAmountText,
 } from './textUtils';
+import { isDebug } from './utils';
 
 const DELETE_CACHE_TIMER_VALUE = 60000;
 
@@ -43,15 +44,15 @@ export default class Bot {
 
         this.subscribe();
 
-        if (process.env.NODE_ENV === 'production') {
+        if (isDebug()) {
+            this.bot.launch();
+        } else {
             this.bot.launch({
                 webhook: {
                     domain: process.env.URL,
                     port: parseInt(process.env.PORT!, 10) || 5000,
                 },
             });
-        } else {
-            this.bot.launch();
         }
     }
 
@@ -85,7 +86,6 @@ export default class Bot {
                         ctx.answerCbQuery(`Будет записано в ${this.model.documents[documentIndex].text}`);
                     } else {
                         console.log('Cache is empty');
-                        console.log('!!!');
                     }
                 }
             } else {
@@ -96,7 +96,8 @@ export default class Bot {
 
                 try {
                     const [guid] = callbackQuery.split('|');
-                    const text = await this.tryPushAmountAndGetText(callbackQuery, ctx.from?.username);
+                    const name = `${ctx.from?.first_name} ${ctx.from?.last_name}`;
+                    const text = await this.tryPushAmountAndGetText(callbackQuery, name);
 
                     this.messageCache.delete(guid);
 

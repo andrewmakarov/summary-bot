@@ -1,14 +1,10 @@
 import fs from 'fs';
 import { Color, NumberFormat } from 'google-spreadsheet';
 import path from 'path';
-import { MODEL_PATH, USER_MODEL_PATH } from './constants';
+import { MODEL_PATH } from './constants';
 import { armeniaSheetText, russiaSheetText } from './textUtils';
 
 const ENCODING_TYPE = 'utf8';
-
-export interface IUsersModel {
-    [key: number]: string;
-}
 
 export interface ICategory {
     key: string;
@@ -21,6 +17,7 @@ export interface IModel {
     headerRowIndex: number;
     defaultFormat: NumberFormat;
     dateColumnName: ICategory;
+    nameColumnName: ICategory;
     modelSheetName: string;
     rowColors: IRowColors;
 }
@@ -32,8 +29,6 @@ export interface IRowColors {
 
 export default class Model {
     private JSONModel: IModel;
-
-    private userJSONModel: IUsersModel;
 
     get rowColors() {
         return this.JSONModel.rowColors;
@@ -47,6 +42,10 @@ export default class Model {
         return this.JSONModel.dateColumnName;
     }
 
+    get nameColumnName() {
+        return this.JSONModel.nameColumnName;
+    }
+
     get categories() {
         return this.JSONModel.categories;
     }
@@ -57,10 +56,6 @@ export default class Model {
 
     get months() {
         return this.JSONModel.months;
-    }
-
-    get users() {
-        return this.userJSONModel;
     }
 
     get documents() {
@@ -77,29 +72,8 @@ export default class Model {
         return path.resolve(__dirname, MODEL_PATH);
     }
 
-    private get userModelFilePath() {
-        return path.resolve(__dirname, USER_MODEL_PATH);
-    }
-
     constructor() {
         const model = fs.readFileSync(this.modelFilePath, ENCODING_TYPE);
         this.JSONModel = JSON.parse(model);
-
-        const isUsersFileExist = fs.existsSync(this.userModelFilePath);
-        if (!isUsersFileExist) {
-            fs.writeFileSync(this.userModelFilePath, '{}');
-        }
-
-        const userModel = fs.readFileSync(this.userModelFilePath, ENCODING_TYPE);
-        this.userJSONModel = JSON.parse(userModel);
     }
-
-    // addUser(id: number, name: string) {
-    //     const idString = id.toString();
-
-    //     if (!this.userJSONModel[idString]) {
-    //         this.userJSONModel[idString] = name;
-    //         fs.writeFileSync(this.userModelFilePath, JSON.stringify(this.userJSONModel), { encoding: ENCODING_TYPE });
-    //     }
-    // }
 }
