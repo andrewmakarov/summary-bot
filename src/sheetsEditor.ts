@@ -1,5 +1,6 @@
 import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
 import Model, { ICategory } from './model';
+import { isDebug } from './utils';
 
 interface IRowData {
     [key: string]: string | number
@@ -26,8 +27,10 @@ export default class SheetsEditor {
     }
 
     async getOrCreateSheet(document: GoogleSpreadsheet) {
+        const prefix = isDebug() ? 'test' : (new Date()).getFullYear();
+
         const monthName = this.model.months[(new Date()).getMonth()];
-        const sheetName = `${monthName}/${(new Date()).getFullYear()}`;
+        const sheetName = `${monthName}/${prefix}`;
 
         const { headerRowIndex } = this.model;
 
@@ -48,15 +51,14 @@ export default class SheetsEditor {
     async pushAmount(documentId: string, amount: number, categoryIndex: number, description: string, userName: string = '') {
         const document = await this.createDocument(documentId);
         const sheet = await this.getOrCreateSheet(document);
-        const newDescription = `${userName}: ${description}`;
 
-        await this.pushAmountCore(sheet, amount, categoryIndex, newDescription);
+        await this.pushAmountCore(sheet, amount, categoryIndex, description, userName);
     }
 
-    private async pushAmountCore(sheet: GoogleSpreadsheetWorksheet, amount: number, categoryIndex: number, description: string) {
+    private async pushAmountCore(sheet: GoogleSpreadsheetWorksheet, amount: number, categoryIndex: number, description: string, userName: string) {
         const category = this.model.categories[categoryIndex];
 
-        const cells = this.createCells(amount, categoryIndex);
+        const cells = this.createCells(amount, categoryIndex, userName);
         const { rowIndex } = await sheet.addRow(cells);
 
         await sheet.loadCells();
@@ -84,12 +86,13 @@ export default class SheetsEditor {
         });
     }
 
-    private createCells(amount:number, categoryIndex: number) {
+    private createCells(amount:number, categoryIndex: number, userName: string) {
         const result: IRowData = {};
         const category = this.model.categories[categoryIndex];
 
         result[this.model.dateColumn.text] = (new Date()).toDateString();
         result[category.text] = amount;
+        result[this.model.nameColumnName.text] = userName;
 
         return result;
     }
