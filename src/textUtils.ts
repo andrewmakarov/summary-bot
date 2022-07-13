@@ -1,4 +1,4 @@
-export const getSuccessAmountText = (amount: number, category: string) => `*${amount}₽* успешно занесено в *${category}*`;
+export const getSuccessAmountText = (amount: number, currency: string, category: string) => `*${amount}${currency}* успешно занесено в *${category}*`;
 export const amountEnteredWrongFormatText = '_Неправильное_ значение\n*Пример:* 120 Помидоры и огурцы';
 export const selectCategoryText = 'Выбери категорию';
 export const tryingAddDAmountText = '✍️Пытаюсь добавить данные✍️';

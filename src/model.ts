@@ -61,9 +61,11 @@ export default class Model {
     get documents() {
         return [{
             text: armeniaSheetText,
+            currency: '֏',
             id: process.env.ARMENIA_SPREADSHEET_ID,
         }, {
             text: russiaSheetText,
+            currency: '₽',
             id: process.env.MAIN_SPREADSHEET_ID,
         }];
     }
