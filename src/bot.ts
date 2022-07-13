@@ -145,10 +145,10 @@ export default class Bot {
                 const category = this.model.categories[categoriesIndex];
 
                 try {
-                    const documentId = this.model.documents[data.documentIndex || 0].id;
+                    const document = this.model.documents[data.documentIndex || 0];
+                    await this.sheetsEditor.pushAmount(document.id!, data.amount, categoriesIndex, data.description, userName);
 
-                    await this.sheetsEditor.pushAmount(documentId!, data.amount, categoriesIndex, data.description, userName);
-                    return getSuccessAmountText(data.amount, category.text);
+                    return getSuccessAmountText(data.amount, document.currency, category.text);
                 } catch (e) {
                     return (e as Error).message;
                 }

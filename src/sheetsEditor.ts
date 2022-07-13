@@ -79,9 +79,8 @@ export default class SheetsEditor {
         const { color1, color2 } = this.model.rowColors;
         const targetColor = (new Date()).getDate() % 2 > 0 ? color1 : color2;
 
-        [this.model.dateColumn, ...this.model.categories].forEach(({ key }) => {
+        [this.model.nameColumnName, this.model.dateColumn, ...this.model.categories].forEach(({ key }) => {
             const cell = sheet.getCellByA1(`${key}${rowIndex}`);
-
             cell.backgroundColor = targetColor;
         });
     }
