@@ -19,7 +19,7 @@
         "text": "Имя"
     },
     "dateColumnName": {
-        "key": "A",
+        "key": "B",
         "text": "Дата"
     },
     "headerRowIndex": 9,

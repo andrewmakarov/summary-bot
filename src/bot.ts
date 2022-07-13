@@ -96,7 +96,7 @@ export default class Bot {
 
                 try {
                     const [guid] = callbackQuery.split('|');
-                    const name = `${ctx.from?.first_name} ${ctx.from?.last_name}`;
+                    const name = `${ctx.from?.first_name} ${ctx.from?.last_name || ''}`.trim();
                     const text = await this.tryPushAmountAndGetText(callbackQuery, name);
 
                     this.messageCache.delete(guid);
