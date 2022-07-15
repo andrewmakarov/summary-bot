@@ -1,7 +1,7 @@
 import { Context, Telegraf } from 'telegraf';
 import { v1 } from 'uuid';
 import cron from 'node-cron';
-import { Update } from 'telegraf/typings/core/types/typegram';
+import { Message, Update } from 'telegraf/typings/core/types/typegram';
 import Model from './model';
 import { DataBase } from './model/db';
 import { createModelLayout } from './modelLayoutCreator';
@@ -154,15 +154,19 @@ export default class Bot {
                 },
             });
 
-            setTimeout(() => {
-                if (this.messageCache.delete(guid)) {
-                    ctx.deleteMessage(message.message_id);
-                    ctx.reply(timeExpiredText);
-                }
-            }, DELETE_CACHE_TIMER_VALUE);
+            this.startClearingCache(ctx, message.message_id, guid);
         } else {
             ctx.reply(amountEnteredWrongFormatText, { parse_mode: 'Markdown' });
         }
+    }
+
+    private startClearingCache(ctx: Context, messageId: number, guid: string) {
+        setTimeout(() => {
+            if (this.messageCache.delete(guid)) {
+                ctx.deleteMessage(messageId);
+                ctx.reply(timeExpiredText);
+            }
+        }, DELETE_CACHE_TIMER_VALUE);
     }
 
     private subscribe() {
