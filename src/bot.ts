@@ -1,10 +1,10 @@
 import { Context, Telegraf } from 'telegraf';
 import { v1 } from 'uuid';
 import cron from 'node-cron';
-import { Message, Update } from 'telegraf/typings/core/types/typegram';
+import { CallbackQuery } from 'telegraf/typings/core/types/typegram';
 import Model from './model';
 import { DataBase } from './model/db';
-import { createModelLayout } from './modelLayoutCreator';
+import { CallbackType, createModelLayout } from './modelLayoutCreator';
 import SheetsEditor from './sheetsEditor';
 import {
     amountEnteredWrongFormatText, cacheIsEmptyText,
@@ -97,46 +97,54 @@ export default class Bot {
         ctx.reply('http://google.ru');
     }
 
-    private async onCallbackQuery(ctx: Context) {
-        const callbackQuery = ctx.callbackQuery!.data || '';
+    private async onCallbackQuery(ctx: Context & { callbackQuery: CallbackQuery }) {
+        const result = ctx.callbackQuery.data || '';
+        const [callbackType] = result.split('|');
 
-        if (callbackQuery.startsWith('c|')) {
-            const [_, documentIndexRaw, guid] = callbackQuery.split('|');
+        switch (callbackType) {
+            case CallbackType.DocumentSelectedAfterWriteAmount: {
+                const [, guid, documentIndexRaw] = result.split('|');
+                const value = this.messageCache.get(guid);
 
-            const value = this.messageCache.get(guid);
-            if (value) {
-                const documentIndex = parseInt(documentIndexRaw, 10);
-                this.messageCache.set(guid, { ...value, documentIndex });
-                const keyboardLayout = createModelLayout(this.model).createCategories(guid);
+                if (value) {
+                    const documentIndex = parseInt(documentIndexRaw, 10);
+                    this.messageCache.set(guid, { ...value, documentIndex });
+                    const keyboardLayout = createModelLayout(this.model).createCategories(guid);
 
-                if (keyboardLayout) {
-                    ctx.editMessageText(selectCategoryText, {
-                        reply_markup: { inline_keyboard: keyboardLayout },
+                    if (keyboardLayout) {
+                        ctx.editMessageText(selectCategoryText, {
+                            reply_markup: { inline_keyboard: keyboardLayout },
+                        });
+
+                        ctx.answerCbQuery(`Будет записано в ${this.model.documents[documentIndex].text}`);
+                    } else {
+                        console.log('Cache is empty');
+                    }
+                }
+                break;
+            }
+            case CallbackType.CategorySelected: {
+                try {
+                    const [, guid, categoriesIndexRaw] = result.split('|');
+
+                    await ctx.editMessageText(tryingAddDAmountText, {
+                        parse_mode: 'Markdown',
+                        reply_markup: undefined,
                     });
 
-                    ctx.answerCbQuery(`Будет записано в ${this.model.documents[documentIndex].text}`);
-                } else {
-                    console.log('Cache is empty');
+                    const name = `${ctx.from?.first_name} ${ctx.from?.last_name || ''}`.trim();
+                    const text = await this.tryPushAmountAndGetText(guid, categoriesIndexRaw, name);
+
+                    this.messageCache.delete(guid);
+
+                    await ctx.editMessageText(text, { parse_mode: 'Markdown' });
+                    await ctx.answerCbQuery();
+                } catch (e) {
+                    console.log(e);
                 }
+                break;
             }
-        } else {
-            await ctx.editMessageText(tryingAddDAmountText, {
-                parse_mode: 'Markdown',
-                reply_markup: undefined,
-            });
-
-            try {
-                const [guid] = callbackQuery.split('|');
-                const name = `${ctx.from?.first_name} ${ctx.from?.last_name || ''}`.trim();
-                const text = await this.tryPushAmountAndGetText(callbackQuery, name);
-
-                this.messageCache.delete(guid);
-
-                await ctx.editMessageText(text, { parse_mode: 'Markdown' });
-                await ctx.answerCbQuery();
-            } catch (e) {
-                console.log(e);
-            }
+            default:
         }
     }
 
@@ -176,28 +184,22 @@ export default class Bot {
         this.bot.on('text', this.onText.bind(this));
     }
 
-    private async tryPushAmountAndGetText(callbackDate?: string, userName?: string) {
-        if (callbackDate) {
-            const [guid, categoriesIndexRaw] = callbackDate.split('|');
+    private async tryPushAmountAndGetText(guid: string, categoriesIndexRaw: string, userName?: string) {
+        const data = this.messageCache.get(guid);
+        if (data) {
+            const categoriesIndex = parseInt(categoriesIndexRaw, 10);
+            const category = this.model.categories[categoriesIndex];
 
-            const data = this.messageCache.get(guid);
-            if (data) {
-                const categoriesIndex = parseInt(categoriesIndexRaw, 10);
-                const category = this.model.categories[categoriesIndex];
+            try {
+                const document = this.model.documents[data.documentIndex || 0];
+                await this.sheetsEditor.pushAmount(document.id!, data.amount, categoriesIndex, data.description, userName);
 
-                try {
-                    const document = this.model.documents[data.documentIndex || 0];
-                    await this.sheetsEditor.pushAmount(document.id!, data.amount, categoriesIndex, data.description, userName);
-
-                    return getSuccessAmountText(data.amount, document.currency, category.text);
-                } catch (e) {
-                    return (e as Error).message;
-                }
+                return getSuccessAmountText(data.amount, document.currency, category.text);
+            } catch (e) {
+                return (e as Error).message;
             }
-
-            return cacheIsEmptyText;
         }
 
-        return errorInCallbackQueryText;
+        return cacheIsEmptyText;
     }
 }
