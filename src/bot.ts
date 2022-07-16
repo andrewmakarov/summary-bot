@@ -1,10 +1,16 @@
-import { Telegraf } from 'telegraf';
+import { Context, Telegraf } from 'telegraf';
 import { v1 } from 'uuid';
+import cron from 'node-cron';
+import { CallbackQuery } from 'telegraf/typings/core/types/typegram';
 import Model from './model';
-import { createModelLayout } from './modelLayoutCreator';
+import { DataBase } from './model/db';
+import { CallbackType, createModelLayout } from './modelLayoutCreator';
 import SheetsEditor from './sheetsEditor';
 import {
-    amountEnteredWrongFormatText, cacheIsEmptyText, countrySheetChoiceText, errorInCallbackQueryText, getSuccessAmountText, selectCategoryText, timeExpiredText, tryingAddDAmountText,
+    amountEnteredWrongFormatText, cacheIsEmptyText,
+    countrySheetChoiceText, errorInCallbackQueryText,
+    getSuccessAmountText, selectCategoryText,
+    timeExpiredText, tryingAddDAmountText,
 } from './textUtils';
 import { isDebug } from './utils';
 
@@ -32,14 +38,17 @@ export default class Bot {
 
     private model: Model;
 
+    private dataBase: DataBase;
+
     private messageCache: Map<string, ICacheItem>;
 
     private sheetsEditor: SheetsEditor;
 
-    constructor(sheetsEditor: SheetsEditor, model: Model) {
+    constructor(sheetsEditor: SheetsEditor, model: Model, dataBase: DataBase) {
         this.bot = new Telegraf(process.env.BOT_TOKEN!);
         this.sheetsEditor = sheetsEditor;
         this.model = model;
+        this.dataBase = dataBase;
         this.messageCache = new Map();
 
         this.subscribe();
@@ -54,25 +63,49 @@ export default class Bot {
                 },
             });
         }
+
+        // this.dataBase.getUsers().then((users) => {
+        //     users.forEach((u) => {
+        //         this.bot.telegram.sendMessage(u.userId, 'Test');
+        //     });
+        // });
+
+        // cron.schedule('* */5 * * * *', () => {
+        //     this.dataBase.getUsers().then((users) => {
+        //         users.forEach((u) => {
+        //             this.bot.telegram.sendMessage(u.userId, 'Test');
+        //         });
+        //     });
+        // });
+
+        // this.bot.telegram.sendMessage('429355799', 'sdfsdfsdfsf');
     }
 
-    private subscribe() {
-        this.bot.start((ctx) => {
-            const { from } = ctx.message;
+    private async onStart(ctx: Context) {
+        const from = ctx.message?.from;
 
+        if (from) {
             const name = `${from.first_name} ${from.last_name}`;
-            // this.model.addUser(from.id, name);
 
             ctx.reply(`Hi ${name},\nWelcome to summary bot`);
-        });
+            await this.dataBase.addUser(from.id.toString(), from.first_name, from.last_name);
+            ctx.reply('You have been successfully added to the system 🎉🎉🎉');
+        }
+    }
 
-        this.bot.on('callback_query', async (ctx) => {
-            const callbackQuery = ctx.callbackQuery.data || '';
+    private onLinkCommand(ctx: Context) {
+        ctx.reply('http://google.ru');
+    }
 
-            if (callbackQuery.startsWith('c|')) {
-                const [_, documentIndexRaw, guid] = callbackQuery.split('|');
+    private async onCallbackQuery(ctx: Context & { callbackQuery: CallbackQuery }) {
+        const result = ctx.callbackQuery.data || '';
+        const [callbackType] = result.split('|');
 
+        switch (callbackType) {
+            case CallbackType.DocumentSelectedAfterWriteAmount: {
+                const [, guid, documentIndexRaw] = result.split('|');
                 const value = this.messageCache.get(guid);
+
                 if (value) {
                     const documentIndex = parseInt(documentIndexRaw, 10);
                     this.messageCache.set(guid, { ...value, documentIndex });
@@ -88,16 +121,19 @@ export default class Bot {
                         console.log('Cache is empty');
                     }
                 }
-            } else {
-                await ctx.editMessageText(tryingAddDAmountText, {
-                    parse_mode: 'Markdown',
-                    reply_markup: undefined,
-                });
-
+                break;
+            }
+            case CallbackType.CategorySelected: {
                 try {
-                    const [guid] = callbackQuery.split('|');
+                    const [, guid, categoriesIndexRaw] = result.split('|');
+
+                    await ctx.editMessageText(tryingAddDAmountText, {
+                        parse_mode: 'Markdown',
+                        reply_markup: undefined,
+                    });
+
                     const name = `${ctx.from?.first_name} ${ctx.from?.last_name || ''}`.trim();
-                    const text = await this.tryPushAmountAndGetText(callbackQuery, name);
+                    const text = await this.tryPushAmountAndGetText(guid, categoriesIndexRaw, name);
 
                     this.messageCache.delete(guid);
 
@@ -106,57 +142,64 @@ export default class Bot {
                 } catch (e) {
                     console.log(e);
                 }
+                break;
             }
-        });
-
-        this.bot.on('text', async (ctx) => {
-            const [amount, description] = getAmount(ctx.message.text);
-            const isValid = !Number.isNaN(amount) && description !== '';
-
-            if (isValid) {
-                const guid = v1();
-                this.messageCache.set(guid, { amount, description });
-
-                const message = await ctx.reply(countrySheetChoiceText, {
-                    reply_markup: {
-                        inline_keyboard: createModelLayout(this.model).createDocuments(guid),
-                    },
-                });
-
-                setTimeout(() => {
-                    if (this.messageCache.delete(guid)) {
-                        ctx.deleteMessage(message.message_id);
-                        ctx.reply(timeExpiredText);
-                    }
-                }, DELETE_CACHE_TIMER_VALUE);
-            } else {
-                ctx.reply(amountEnteredWrongFormatText, { parse_mode: 'Markdown' });
-            }
-        });
+            default:
+        }
     }
 
-    private async tryPushAmountAndGetText(callbackDate?: string, userName?: string) {
-        if (callbackDate) {
-            const [guid, categoriesIndexRaw] = callbackDate.split('|');
+    private async onText(ctx: Context & { message: { text: string } }) {
+        const [amount, description] = getAmount(ctx.message.text);
+        const isValid = !Number.isNaN(amount) && description !== '';
 
-            const data = this.messageCache.get(guid);
-            if (data) {
-                const categoriesIndex = parseInt(categoriesIndexRaw, 10);
-                const category = this.model.categories[categoriesIndex];
+        if (isValid) {
+            const guid = v1();
+            this.messageCache.set(guid, { amount, description });
 
-                try {
-                    const document = this.model.documents[data.documentIndex || 0];
-                    await this.sheetsEditor.pushAmount(document.id!, data.amount, categoriesIndex, data.description, userName);
+            const message = await ctx.reply(countrySheetChoiceText, {
+                reply_markup: {
+                    inline_keyboard: createModelLayout(this.model).createDocuments(guid),
+                },
+            });
 
-                    return getSuccessAmountText(data.amount, document.currency, category.text);
-                } catch (e) {
-                    return (e as Error).message;
-                }
+            this.startClearingCache(ctx, message.message_id, guid);
+        } else {
+            ctx.reply(amountEnteredWrongFormatText, { parse_mode: 'Markdown' });
+        }
+    }
+
+    private startClearingCache(ctx: Context, messageId: number, guid: string) {
+        setTimeout(() => {
+            if (this.messageCache.delete(guid)) {
+                ctx.deleteMessage(messageId);
+                ctx.reply(timeExpiredText);
             }
+        }, DELETE_CACHE_TIMER_VALUE);
+    }
 
-            return cacheIsEmptyText;
+    private subscribe() {
+        this.bot.start(this.onStart.bind(this));
+        this.bot.command('/link', this.onLinkCommand.bind(this));
+        this.bot.on('callback_query', this.onCallbackQuery.bind(this));
+        this.bot.on('text', this.onText.bind(this));
+    }
+
+    private async tryPushAmountAndGetText(guid: string, categoriesIndexRaw: string, userName?: string) {
+        const data = this.messageCache.get(guid);
+        if (data) {
+            const categoriesIndex = parseInt(categoriesIndexRaw, 10);
+            const category = this.model.categories[categoriesIndex];
+
+            try {
+                const document = this.model.documents[data.documentIndex || 0];
+                await this.sheetsEditor.pushAmount(document.id!, data.amount, categoriesIndex, data.description, userName);
+
+                return getSuccessAmountText(data.amount, document.currency, category.text);
+            } catch (e) {
+                return (e as Error).message;
+            }
         }
 
-        return errorInCallbackQueryText;
+        return cacheIsEmptyText;
     }
 }

@@ -10,6 +10,13 @@ export interface IModelLayoutCreator {
     createDocuments(guid: string): { text: string, callback_data: string }[][];
 }
 
+export enum CallbackType {
+    DocumentSelectedAfterWriteAmount = '1',
+    CategorySelected = '2',
+}
+
+const createParameters = (callbackType: CallbackType, ...parameters: unknown[]) => [callbackType, ...parameters].join('|');
+
 class ModelLayoutCreator implements IModelLayoutCreator {
     model: Model;
 
@@ -23,7 +30,7 @@ class ModelLayoutCreator implements IModelLayoutCreator {
         this.model.categories.forEach((category, index) => {
             const result = {
                 text: category.text,
-                callback_data: `${guid}|${index}`,
+                callback_data: createParameters(CallbackType.CategorySelected, guid, index),
             };
 
             if (index % 2 === 0) {
@@ -40,7 +47,7 @@ class ModelLayoutCreator implements IModelLayoutCreator {
     createDocuments(guid: string) {
         return [this.model.documents.map((document, index) => ({
             text: document.text,
-            callback_data: `c|${index}|${guid}`,
+            callback_data: createParameters(CallbackType.DocumentSelectedAfterWriteAmount, guid, index),
         }))];
     }
 }
