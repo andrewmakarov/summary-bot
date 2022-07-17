@@ -5,14 +5,19 @@ export interface ILayoutCategory {
     callback_data: string;
 }
 
+export interface IModelLayoutCreator {
+    createCategories(guid: string): ILayoutCategory[][];
+    createDocuments(guid: string): { text: string, callback_data: string }[][];
+}
+
 export enum CallbackType {
-    SelectCategoryCommand = '1',
-    SelectDocumentCommand = '2',
+    DocumentSelectedAfterWriteAmount = '1',
+    CategorySelected = '2',
 }
 
 const createParameters = (callbackType: CallbackType, ...parameters: unknown[]) => [callbackType, ...parameters].join('|');
 
-class ModelLayoutCreator {
+class ModelLayoutCreator implements IModelLayoutCreator {
     model: Model;
 
     constructor(model: Model) {
@@ -25,7 +30,7 @@ class ModelLayoutCreator {
         this.model.categories.forEach((category, index) => {
             const result = {
                 text: category.text,
-                callback_data: createParameters(CallbackType.SelectCategoryCommand, guid, index),
+                callback_data: createParameters(CallbackType.CategorySelected, guid, index),
             };
 
             if (index % 2 === 0) {
@@ -39,12 +44,12 @@ class ModelLayoutCreator {
         return resultArray;
     }
 
-    createDocuments() {
-        return [this.model.documents.map(({ id, text }) => ({
-            text,
-            callback_data: createParameters(CallbackType.SelectDocumentCommand, id),
+    createDocuments(guid: string) {
+        return [this.model.documents.map((document, index) => ({
+            text: document.text,
+            callback_data: createParameters(CallbackType.DocumentSelectedAfterWriteAmount, guid, index),
         }))];
     }
 }
 
-export const createModelLayout = (model: Model): ModelLayoutCreator => new ModelLayoutCreator(model);
+export const createModelLayout = (model: Model): IModelLayoutCreator => new ModelLayoutCreator(model);

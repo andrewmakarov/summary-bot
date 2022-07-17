@@ -13,15 +13,6 @@
             "alpha": 1
         }
     },
-    "documents": [{
-        "text": "Армения",
-        "currency": "֏",
-        "id": "1CgxBv0l7PyT4A5ZFi8rqDJDUXvcxP4d4cS3iqFaGZBc"
-    }, {
-        "text": "Россия",
-        "currency": "₽",
-        "id": "6666666fdfg"
-    }],
     "modelSheetName": "Sample",
     "nameColumnName": {
         "key": "A",
