@@ -8,7 +8,7 @@ import SheetsEditor from './sheetsEditor';
 dotenv.config();
 
 const model = new Model();
+const dataLayer = new DataBase(model);
 const sheetsEditor = new SheetsEditor(model);
-const dataBase = new DataBase();
 
-const bot = new Bot(sheetsEditor, model, dataBase);
+const bot = new Bot(sheetsEditor, model, dataLayer);

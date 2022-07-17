@@ -2,7 +2,6 @@ import fs from 'fs';
 import { Color, NumberFormat } from 'google-spreadsheet';
 import path from 'path';
 import { MODEL_PATH } from './constants';
-import { armeniaSheetText, russiaSheetText } from './textUtils';
 
 const ENCODING_TYPE = 'utf8';
 
@@ -20,6 +19,11 @@ export interface IModel {
     nameColumnName: ICategory;
     modelSheetName: string;
     rowColors: IRowColors;
+    documents: Array<{
+        id: string;
+        text: string;
+        currency: string;
+    }>
 }
 
 export interface IRowColors {
@@ -59,15 +63,7 @@ export default class Model {
     }
 
     get documents() {
-        return [{
-            text: armeniaSheetText,
-            currency: '֏',
-            id: process.env.ARMENIA_SPREADSHEET_ID,
-        }, {
-            text: russiaSheetText,
-            currency: '₽',
-            id: process.env.MAIN_SPREADSHEET_ID,
-        }];
+        return this.JSONModel.documents;
     }
 
     private get modelFilePath() {
