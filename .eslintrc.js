@@ -16,7 +16,8 @@ module.exports = {
         //"indent": "off",
         "@typescript-eslint/indent": ["error", 4],
         "class-methods-use-this": ["off"],
-        'max-len': 'off'
+        'max-len': 'off',
+        "import/prefer-default-export": 'off',
     },
     // rules: {
     //     '@typescript-eslint/no-extra-semi': 'error',

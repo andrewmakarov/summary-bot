@@ -1,5 +1,5 @@
 import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
-import Model, { ICategory } from './model';
+import { ICategory, SheetModel } from './model/sheetModel';
 import { isDebug } from './utils';
 
 interface IRowData {
@@ -7,9 +7,9 @@ interface IRowData {
 }
 
 export default class SheetsEditor {
-    model: Model;
+    model: SheetModel;
 
-    constructor(model: Model) {
+    constructor(model: SheetModel) {
         this.model = model;
     }
 
