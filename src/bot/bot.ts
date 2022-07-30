@@ -53,7 +53,6 @@ export default class Bot {
 
         // this.bot.telegram.sendMessage('429355799', 'sdfsdfsdfsf');
     }
-    // Core
 
     private launch() {
         const debugConfig = undefined;
