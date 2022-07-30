@@ -1,5 +1,4 @@
 import { Collection, MongoClient, ServerApiVersion } from 'mongodb';
-import Model from '../../model';
 import { DB_COLLECTION, DB_NAME, getURI } from './constants';
 
 const createClient = () => new MongoClient(getURI(process.env.DB_USER!, process.env.DB_PASSWORD!), {
@@ -15,13 +14,7 @@ export interface IUser {
     isAdmin: boolean;
     currentDocumentId: string
 }
-export class DataBase {
-    private model: Model;
-
-    constructor(model: Model) {
-        this.model = model;
-    }
-
+export class UserModel {
     private async getCollection(): Promise<[MongoClient, Collection<IUser>]> {
         const client = createClient();
         await client.connect();
@@ -42,7 +35,8 @@ export class DataBase {
                 firstName,
                 lastName,
                 isAdmin: false,
-                currentDocumentId: this.model.documents[0].id,
+                // currentDocumentId: this.model.documents[0].id,
+                currentDocumentId: '', // test
             });
         }
 
