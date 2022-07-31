@@ -23,7 +23,13 @@ export interface IModel {
         id: string;
         text: string;
         currency: string;
-    }>
+    }>,
+    summary: {
+        spent: string
+        left: string
+        canSave: string
+        range: string
+    },
 }
 
 export interface IRowColors {
@@ -64,6 +70,10 @@ export class SheetModel {
 
     get documents() {
         return this.JSONModel.documents;
+    }
+
+    get summary() {
+        return this.JSONModel.summary;
     }
 
     private get modelFilePath() {

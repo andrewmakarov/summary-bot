@@ -1,4 +1,10 @@
 {
+    "summary": {
+        "spent": "Потрачено",
+        "left": "Осталось",
+        "canSave": "Можно сэкономить",
+        "range": "A1:N10"
+    },
     "rowColors": {
         "color1": {
             "red": 0.9764,

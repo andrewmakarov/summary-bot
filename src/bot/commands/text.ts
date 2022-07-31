@@ -28,7 +28,10 @@ const command = async (ctx: Context, sheetModel: SheetModel, userModel: UserMode
 
         item.messageId = message.message_id;
     } else {
-        ctx.reply(amountEnteredWrongFormatText, { parse_mode: 'Markdown' });
+        ctx.reply(amountEnteredWrongFormatText, {
+            parse_mode: 'Markdown',
+            reply_to_message_id: ctx.message?.message_id,
+        });
     }
 };
 

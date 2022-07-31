@@ -26,7 +26,7 @@ export default class SheetsEditor {
         return result;
     }
 
-    async getOrCreateSheet(document: GoogleSpreadsheet) {
+    async getOrCreateSheet(document: GoogleSpreadsheet, skipLoadHeaderRow = false) {
         const prefix = isDebug() ? 'test' : (new Date()).getFullYear();
 
         const monthName = this.model.months[(new Date()).getMonth()];
@@ -43,16 +43,41 @@ export default class SheetsEditor {
             });
         }
 
-        await sheet.loadHeaderRow(headerRowIndex);
+        if (!skipLoadHeaderRow) {
+            await sheet.loadHeaderRow(headerRowIndex);
+        }
 
         return sheet;
     }
 
-    async pushAmount(documentId: string, amount: number, categoryIndex: number, description: string, userName: string = '') {
+    public async pushAmount(documentId: string, amount: number, categoryIndex: number, description: string, userName: string = '') {
         const document = await this.createDocument(documentId);
-        const sheet = await this.getOrCreateSheet(document);
+        const sheet = await this.getOrCreateSheet(document, true);
 
         await this.pushAmountCore(sheet, amount, categoryIndex, description, userName);
+    }
+
+    public async getSummary(documentId: string) {
+        const {
+            range, spent, left, canSave,
+        } = this.model.summary;
+
+        const document = await this.createDocument(documentId);
+        const sheet = await this.getOrCreateSheet(document, true);
+
+        await sheet.loadCells(range);
+
+        const rows = await sheet.getRows();
+
+        const spentValue = rows[0][spent];
+        const leftValue = rows[0][left];
+        const canSaveValue = rows[0][canSave];
+
+        return {
+            spentValue,
+            leftValue,
+            canSaveValue,
+        };
     }
 
     private async pushAmountCore(sheet: GoogleSpreadsheetWorksheet, amount: number, categoryIndex: number, description: string, userName: string) {
