@@ -18,7 +18,7 @@ const tryPushAmountAndGetText = async (guid: string, categoriesIndex: number, us
 
             await pushAmountToSheet(document!.id, data.amount, categoriesIndex, data.description, userName);
 
-            return getSuccessAmountText(data.amount, document!.currency, category.text);
+            return getSuccessAmountText(data.amount, document!.currency, document!.text, category.text);
         } catch (e) {
             return (e as Error).message;
         }
