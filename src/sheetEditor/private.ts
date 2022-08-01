@@ -17,10 +17,10 @@ export const createDocument = async (documentId: string) => {
     return result;
 };
 
-export const getOrCreateSheetLight = async (document: GoogleSpreadsheet) => {
+export const getOrCreateSheetLight = async (document: GoogleSpreadsheet, date?: Date) => {
     const prefix = isDebug() ? 'test' : (new Date()).getFullYear();
 
-    const monthName = sheetModel.months[(new Date()).getMonth()];
+    const monthName = sheetModel.months[(date || new Date()).getMonth()];
     const sheetName = `${monthName}/${prefix}`;
 
     let sheet = document.sheetsByTitle[sheetName];
@@ -35,8 +35,8 @@ export const getOrCreateSheetLight = async (document: GoogleSpreadsheet) => {
     return sheet;
 };
 
-export const getOrCreateSheet = async (document: GoogleSpreadsheet) => {
-    const sheet = await getOrCreateSheetLight(document);
+export const getOrCreateSheet = async (document: GoogleSpreadsheet, date?: Date) => {
+    const sheet = await getOrCreateSheetLight(document, date);
 
     const { headerRowIndex } = sheetModel;
     await sheet.loadHeaderRow(headerRowIndex);

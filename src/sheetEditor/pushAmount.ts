@@ -18,7 +18,7 @@ const fillCellsBackGround = (sheet: GoogleSpreadsheetWorksheet, rowIndex: number
     const { color1, color2 } = sheetModel.rowColors;
     const targetColor = (new Date()).getDate() % 2 > 0 ? color1 : color2;
 
-    [sheetModel.nameColumnName, sheetModel.dateColumn, ...sheetModel.categories].forEach(({ key }) => {
+    [sheetModel.userNameColumn, sheetModel.dateColumn, ...sheetModel.categories].forEach(({ key }) => {
         const cell = sheet.getCellByA1(`${key}${rowIndex}`);
         cell.backgroundColor = targetColor;
     });
@@ -30,7 +30,7 @@ const createCells = (amount:number, categoryIndex: number, userName: string) => 
 
     result[sheetModel.dateColumn.text] = (new Date()).toDateString();
     result[category.text] = amount;
-    result[sheetModel.nameColumnName.text] = userName;
+    result[sheetModel.userNameColumn.text] = userName;
 
     return result;
 };

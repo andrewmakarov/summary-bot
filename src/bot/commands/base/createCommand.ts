@@ -1,13 +1,12 @@
 import { Context } from 'telegraf';
-import { Cache } from '../../../cache';
 import { factory } from '../../../factory';
 import { SheetModel } from '../../../model/sheetModel';
 import { UserModel } from '../../../model/userModel';
 
-type CommandDelegate = (ctx: Context, sheetModel: SheetModel, userModel: UserModel, cache: Cache) => void;
+type CommandDelegate = (ctx: Context, sheetModel: SheetModel, userModel: UserModel) => void;
 
 export const createCommand = (command: CommandDelegate) => {
-    const { sheetModel, userModel, cache } = factory;
+    const { sheetModel, userModel } = factory;
 
-    return (ctx: Context) => command(ctx, sheetModel, userModel, cache);
+    return (ctx: Context) => command(ctx, sheetModel, userModel);
 };

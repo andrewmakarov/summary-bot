@@ -15,8 +15,8 @@ export interface IModel {
     categories: Array<ICategory>
     headerRowIndex: number;
     defaultFormat: NumberFormat;
-    dateColumnName: ICategory;
-    nameColumnName: ICategory;
+    dateColumn: ICategory;
+    userNameColumn: ICategory;
     modelSheetName: string;
     rowColors: IRowColors;
     documents: Array<{
@@ -49,11 +49,11 @@ export class SheetModel {
     }
 
     get dateColumn() {
-        return this.JSONModel.dateColumnName;
+        return this.JSONModel.dateColumn;
     }
 
-    get nameColumnName() {
-        return this.JSONModel.nameColumnName;
+    get userNameColumn() {
+        return this.JSONModel.userNameColumn;
     }
 
     get categories() {

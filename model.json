@@ -29,11 +29,11 @@
         "id": "6666666fdfg"
     }],
     "modelSheetName": "Sample",
-    "nameColumnName": {
+    "userNameColumn": {
         "key": "A",
         "text": "Имя"
     },
-    "dateColumnName": {
+    "dateColumn": {
         "key": "B",
         "text": "Дата"
     },
