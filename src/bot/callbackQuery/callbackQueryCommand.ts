@@ -1,6 +1,6 @@
 import { factory } from '../../factory';
-import { selectCategoryState } from './states/selectCategoryState';
-import { selectDocumentState } from './states/selectDocumentState';
+import { selectedCategoryState } from './states/selectedCategoryState';
+import { selectedDocumentState } from './states/selectedDocumentState';
 import { CallbackQueryContext, CallbackType } from './types';
 
 export const callbackQueryCommand = (ctx: CallbackQueryContext) => {
@@ -9,11 +9,11 @@ export const callbackQueryCommand = (ctx: CallbackQueryContext) => {
 
     switch (callbackType) {
         case CallbackType.SelectDocumentCommand: {
-            selectDocumentState(ctx, factory, callbackParams);
+            selectedDocumentState(ctx, factory, callbackParams);
             break;
         }
         case CallbackType.SelectCategoryCommand: {
-            selectCategoryState(ctx, factory, callbackParams);
+            selectedCategoryState(ctx, factory, callbackParams);
             break;
         }
         default:

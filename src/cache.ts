@@ -1,6 +1,4 @@
-import { Context } from 'telegraf';
 import { v1 } from 'uuid';
-import { timeExpiredText } from './textUtils';
 
 const msInMinutes = 10000;
 let deleteTimerId: NodeJS.Timeout;
@@ -9,14 +7,21 @@ export type CacheData = {
     amount: number;
     description: string;
 
-    ctx: Context;
     messageId?: number;
+    chatId?: number;
+    inlineMessageId?: string;
 };
 
-type CacheItem = { date: number } & CacheData;
+export type CacheItem = { date: number } & CacheData;
 
 export class Cache {
     private cacheInternal: Map<string, CacheItem> = new Map();
+
+    private onExpiredCacheItem: (item: CacheItem) => void;
+
+    constructor(onExpiredCacheItem: (item: CacheItem) => void) {
+        this.onExpiredCacheItem = onExpiredCacheItem;
+    }
 
     public add(data: CacheData) {
         const guid = v1();
@@ -45,7 +50,7 @@ export class Cache {
     }
 
     public getAndDelete(guid: string) {
-        const value = this.cacheInternal.get(guid);
+        const value = this.get(guid);
         this.cacheInternal.delete(guid);
 
         return value;
@@ -67,9 +72,7 @@ export class Cache {
             const item = this.cacheInternal.get(key);
 
             if (item) {
-                const { ctx, messageId } = item;
-
-                ctx.telegram.editMessageText(ctx.chat?.id, messageId, ctx.inlineMessageId, timeExpiredText);
+                this.onExpiredCacheItem(item);
             }
 
             this.cacheInternal.delete(key);

@@ -35,7 +35,6 @@ export class UserModel {
                 firstName,
                 lastName,
                 isAdmin: false,
-                // currentDocumentId: this.model.documents[0].id,
                 currentDocumentId: '', // test
             });
         }
