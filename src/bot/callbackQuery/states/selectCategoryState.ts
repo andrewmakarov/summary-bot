@@ -11,17 +11,17 @@ const tryPushAmountAndGetText = async (guid: string, categoriesIndex: number, us
     if (data) {
         const category = sheetModel.categories[categoriesIndex];
 
-        try {
-            const user = await userModel.getUser(userId);
-            const document = sheetModel.documents.find((d) => d.id === user!.currentDocumentId);
-            const userName = getUserName(user!.firstName, user!.lastName);
+        // try {
+        const user = await userModel.getUser(userId);
+        const document = sheetModel.documents.find((d) => d.id === user!.currentDocumentId);
+        const userName = getUserName(user!.firstName, user!.lastName);
 
-            await pushAmountToSheet(document!.id, data.amount, categoriesIndex, data.description, userName);
+        await pushAmountToSheet(document!.id, data.amount, categoriesIndex, data.description, userName);
 
-            return getSuccessAmountText(data.amount, document!.currency, document!.text, category.text);
-        } catch (e) {
-            return (e as Error).message;
-        }
+        return getSuccessAmountText(data.amount, document!.currency, document!.text, category.text);
+        // } catch (e) {
+        //     return (e as Error).message;
+        // }
     }
 
     return cacheIsEmptyText;
