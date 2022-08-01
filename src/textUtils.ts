@@ -4,7 +4,7 @@ interface ISummaryConfig {
     canSaveValue: string;
 }
 
-export const getSuccessAmountText = (amount: number, currency: string, category: string) => `*${amount}${currency}* успешно занесено в *${category}*`;
+export const getSuccessAmountText = (amount: number, currency: string, documentName: string, category: string) => `*${amount}${currency}* успешно занесено в *${category}*(${documentName})`;
 export const getDefaultDocumentText = (documentName: string) => `Документ *${documentName}* установлен по умолчанию`;
 
 export const amountEnteredWrongFormatText = '_Неправильное_ значение\n*Пример:* 120 Помидоры и огурцы';
