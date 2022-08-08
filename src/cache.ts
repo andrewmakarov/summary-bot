@@ -17,9 +17,9 @@ export type CacheItem = { date: number } & CacheData;
 export class Cache {
     private cacheInternal: Map<string, CacheItem> = new Map();
 
-    private onExpiredCacheItem: (item: CacheItem) => void;
+    private onExpiredCacheItem?: (item: CacheItem) => void;
 
-    constructor(onExpiredCacheItem: (item: CacheItem) => void) {
+    public onExpiredItem(onExpiredCacheItem:(item: CacheItem) => void) {
         this.onExpiredCacheItem = onExpiredCacheItem;
     }
 
@@ -63,7 +63,7 @@ export class Cache {
         this.cacheInternal.forEach(({ date }, key) => {
             const difference = currentDate.valueOf() - date;
 
-            if (difference > msInMinutes / 2) {
+            if (difference > msInMinutes) {
                 expiredKeys.push(key);
             }
         });
@@ -71,7 +71,7 @@ export class Cache {
         expiredKeys.forEach((key) => {
             const item = this.cacheInternal.get(key);
 
-            if (item) {
+            if (item && this.onExpiredCacheItem) {
                 this.onExpiredCacheItem(item);
             }
 

@@ -16,9 +16,9 @@ export default class Bot {
 
     private commands: Array<{ command: string, onAction: (ctx: Context) => void }>;
 
-    constructor() {
+    constructor(cache: Cache) {
         this.bot = new Telegraf<Context>(process.env.BOT_TOKEN!);
-        this.cache = new Cache(this.onExpiredCacheItem.bind(this));
+        this.cache = cache;
 
         this.commands = [
             {
@@ -81,6 +81,8 @@ export default class Bot {
 
         this.bot.on('callback_query', callbackQueryCommand);
         this.bot.on('text', textCommand);
+
+        this.cache.onExpiredItem(this.onExpiredCacheItem.bind(this));
     }
 
     private onExpiredCacheItem(item: CacheItem) {

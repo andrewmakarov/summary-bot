@@ -1,7 +1,9 @@
 import { Cache, CacheItem } from '../../../cache';
 import { IFactory } from '../../../factory';
 import { pushAmountToSheet } from '../../../sheetEditor/pushAmount';
-import { cacheIsEmptyText, getSuccessAmountText, tryingAddDInfoText } from '../../../textUtils';
+import {
+    cacheIsEmptyText, formatErrorText, formatSuccessAmountText, tryingAddDInfoText,
+} from '../../../textUtils';
 import { getUserName } from '../../utils';
 import { CallbackQueryContext, StateDelegate } from '../types';
 
@@ -18,9 +20,9 @@ const tryPushAmountAndGetText = async (data: CacheItem, categoriesIndex: number,
 
             await pushAmountToSheet(document!.id, data.amount, categoriesIndex, data.description, userName);
 
-            return getSuccessAmountText(data.amount, document!.currency, document!.text, category.text);
+            return formatSuccessAmountText(data.amount, document!.currency, document!.text, category.text);
         } catch (e) {
-            return (e as Error).message;
+            return formatErrorText((e as Error).message);
         }
     }
 
@@ -41,6 +43,8 @@ export const selectedCategoryState: StateDelegate = async (ctx: CallbackQueryCon
     const text = data
         ? await tryPushAmountAndGetText(data, categoriesIndex, ctx.from!.id, factory)
         : cacheIsEmptyText;
+
+    // await ctx.telegram.forwardMessage(5527199508, data?.chatId!, data?.messageId!);
 
     ctx.editMessageText(text, { parse_mode: 'Markdown' });
     ctx.answerCbQuery();
