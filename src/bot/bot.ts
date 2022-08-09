@@ -6,7 +6,7 @@ import {
     documentCommand, linkCommand, startCommand, summaryCommand, textCommand, todayCommand,
 } from './commands';
 import { callbackQueryCommand } from './callbackQuery/callbackQueryCommand';
-import { Cache, CacheItem } from '../cache';
+import { Cache, WithKey, CacheItemBody } from '../cache';
 import { timeExpiredText } from '../textUtils';
 
 export default class Bot {
@@ -85,9 +85,12 @@ export default class Bot {
         this.cache.onExpiredItem(this.onExpiredCacheItem.bind(this));
     }
 
-    private onExpiredCacheItem(item: CacheItem) {
-        const { messageId, inlineMessageId, chatId } = item;
+    private onExpiredCacheItem(item: WithKey<CacheItemBody>) {
+        const { messageId, userMap, userId } = item;
+        const currentUser = userMap.get(userId);
 
-        this.bot.telegram.editMessageText(chatId, messageId, inlineMessageId, timeExpiredText);
+        if (currentUser) {
+            this.bot.telegram.editMessageText(currentUser.chatId, messageId, undefined, timeExpiredText);
+        }
     }
 }

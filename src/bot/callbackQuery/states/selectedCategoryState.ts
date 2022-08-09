@@ -1,4 +1,4 @@
-import { Cache, CacheItem } from '../../../cache';
+import { Cache, WithKey, CacheItemBody } from '../../../cache';
 import { IFactory } from '../../../factory';
 import { pushAmountToSheet } from '../../../sheetEditor/pushAmount';
 import {
@@ -6,14 +6,14 @@ import {
 } from '../../../textUtils';
 import { CallbackQueryContext, StateDelegate } from '../types';
 
-const tryPushAmountAndGetText = async (data: CacheItem, categoriesIndex: number, userId: number, factory: IFactory) => {
-    const { sheetModel, userModel } = factory;
+const tryPushAmountAndGetText = async (data: WithKey<CacheItemBody>, categoriesIndex: number, userId: number, factory: IFactory) => {
+    const { sheetModel } = factory;
 
     if (data) {
         const category = sheetModel.categories[categoriesIndex];
 
         try {
-            const user = await userModel.getUser(userId);
+            const user = data.userMap.get(data.userId);
             const document = sheetModel.documents.find((d) => d.id === user!.currentDocumentId);
 
             await pushAmountToSheet(document!.id, data.amount, categoriesIndex, data.description, user?.userName);
@@ -42,7 +42,7 @@ export const selectedCategoryState: StateDelegate = async (ctx: CallbackQueryCon
         ? await tryPushAmountAndGetText(data, categoriesIndex, ctx.from!.id, factory)
         : cacheIsEmptyText;
 
-    // await ctx.telegram.forwardMessage(5527199508, data?.chatId!, data?.messageId!);
+    // await ctx.telegram.forwardMessage(5527199508, data?.chatId!, data?.messageId!, { disable_notification: false });
 
     ctx.editMessageText(text, { parse_mode: 'Markdown' });
     ctx.answerCbQuery();

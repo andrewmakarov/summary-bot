@@ -15,7 +15,7 @@ export interface IUser {
     chatId: number;
 }
 export class UserModel {
-    defaultDocumentId: string;
+    private defaultDocumentId: string;
 
     constructor(defaultDocumentId: string) {
         this.defaultDocumentId = defaultDocumentId;
@@ -58,14 +58,25 @@ export class UserModel {
         client.close();
     }
 
-    async getUsers() {
+    async getUserMap() {
         const client = createClient();
         await client.connect();
 
         const users = client.db(DB_NAME).collection<IUser>(DB_COLLECTION);
 
-        const result = await users.find().toArray();
+        const userList = await users.find().toArray();
         client.close();
+
+        const result = new Map<number, Omit<IUser, 'userId'>>();
+
+        userList.forEach((user) => {
+            result.set(user.userId, {
+                userName: user.userName,
+                chatId: user.chatId,
+                currentDocumentId: user.currentDocumentId,
+                isAdmin: user.isAdmin,
+            });
+        });
 
         return result;
     }
