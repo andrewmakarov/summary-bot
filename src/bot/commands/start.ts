@@ -11,7 +11,7 @@ const command = async (ctx: Context, sheetModel: SheetModel, userModel: UserMode
         const name = getUserName(from.first_name, from.last_name);
         ctx.reply(`Hi ${name},\nWelcome to summary bot`);
 
-        await userModel.addUser(from.id, from.first_name, from.last_name);
+        await userModel.addUser(from.id, getUserName(from.first_name, from.last_name), ctx.chat?.id);
         ctx.reply('You have been successfully added to the system 🎉🎉🎉');
     }
 };

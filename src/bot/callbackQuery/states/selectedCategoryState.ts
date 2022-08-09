@@ -4,7 +4,6 @@ import { pushAmountToSheet } from '../../../sheetEditor/pushAmount';
 import {
     cacheIsEmptyText, formatErrorText, formatSuccessAmountText, tryingAddDInfoText,
 } from '../../../textUtils';
-import { getUserName } from '../../utils';
 import { CallbackQueryContext, StateDelegate } from '../types';
 
 const tryPushAmountAndGetText = async (data: CacheItem, categoriesIndex: number, userId: number, factory: IFactory) => {
@@ -16,11 +15,10 @@ const tryPushAmountAndGetText = async (data: CacheItem, categoriesIndex: number,
         try {
             const user = await userModel.getUser(userId);
             const document = sheetModel.documents.find((d) => d.id === user!.currentDocumentId);
-            const userName = getUserName(user!.firstName, user!.lastName);
 
-            await pushAmountToSheet(document!.id, data.amount, categoriesIndex, data.description, userName);
+            await pushAmountToSheet(document!.id, data.amount, categoriesIndex, data.description, user?.userName);
 
-            return formatSuccessAmountText(data.amount, document!.currency, document!.text, category.text);
+            return formatSuccessAmountText(data.amount, document!.currency, document!.name, category.text);
         } catch (e) {
             return formatErrorText((e as Error).message);
         }

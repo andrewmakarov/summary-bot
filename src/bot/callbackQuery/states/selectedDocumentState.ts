@@ -10,7 +10,7 @@ export const selectedDocumentState: StateDelegate = async (ctx: CallbackQueryCon
     await ctx.editMessageText(tryingAddDInfoText);
 
     await userModel.setDocumentId(userId, documentId);
-    await ctx.editMessageText(getDefaultDocumentText(document!.text), { parse_mode: 'Markdown' });
+    await ctx.editMessageText(getDefaultDocumentText(document!.name), { parse_mode: 'Markdown' });
 
     ctx.answerCbQuery();
 };

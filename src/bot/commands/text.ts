@@ -30,7 +30,7 @@ const command = async (ctx: Context) => {
     const [amount, description] = calculateAmount((ctx as MessageContext).message.text);
     const isValid = !Number.isNaN(amount) && description !== '';
 
-    // console.log(ctx.chat?.id);
+    console.log(ctx.chat?.id);
 
     if (isValid) {
         const cacheItem = createCacheItem(amount, description, ctx);
