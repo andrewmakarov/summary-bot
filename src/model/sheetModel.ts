@@ -11,13 +11,15 @@ export interface ICategory {
 }
 
 export interface IWarning {
-
+    category: string;
+    amount: number;
 }
 
 export interface IDocument {
     id: string;
     name: string;
     currency: string;
+    warnings: Array<IWarning>;
 }
 
 export interface IModel {

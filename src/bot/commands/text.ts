@@ -32,6 +32,7 @@ const command = async (ctx: Context) => {
             description,
             userMap,
             userId: ctx.from?.id!,
+            userMessageId: ctx.message?.message_id,
         };
 
         const cache = ctx.state.cache as Cache;

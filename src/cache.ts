@@ -10,6 +10,7 @@ export type CacheItemBody = {
     userMap: Map<number, Omit<IUser, 'userId'>>;
     userId: number;
     messageId?: number;
+    userMessageId?: number;
 };
 
 export type WithKey<TSchema> = TSchema & {

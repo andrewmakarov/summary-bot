@@ -6,25 +6,24 @@ import {
 } from '../../../textUtils';
 import { CallbackQueryContext, StateDelegate } from '../types';
 
-const tryPushAmountAndGetText = async (data: WithKey<CacheItemBody>, categoriesIndex: number, userId: number, factory: IFactory) => {
+const tryPushAmountAndGetText = async (
+    data: WithKey<CacheItemBody>,
+    categoriesIndex: number,
+    factory: IFactory,
+): Promise<[boolean, string]> => {
     const { sheetModel } = factory;
+    const category = sheetModel.categories[categoriesIndex];
 
-    if (data) {
-        const category = sheetModel.categories[categoriesIndex];
+    try {
+        const user = data.userMap.get(data.userId);
+        const document = sheetModel.documents.find((d) => d.id === user!.currentDocumentId);
 
-        try {
-            const user = data.userMap.get(data.userId);
-            const document = sheetModel.documents.find((d) => d.id === user!.currentDocumentId);
+        await pushAmountToSheet(document!.id, data.amount, categoriesIndex, data.description, user?.userName);
 
-            await pushAmountToSheet(document!.id, data.amount, categoriesIndex, data.description, user?.userName);
-
-            return formatSuccessAmountText(data.amount, document!.currency, document!.name, category.text);
-        } catch (e) {
-            return formatErrorText((e as Error).message);
-        }
+        return [true, formatSuccessAmountText(data.amount, document!.currency, document!.name, category.text)];
+    } catch (e) {
+        return [false, formatErrorText((e as Error).message)];
     }
-
-    return cacheIsEmptyText;
 };
 
 export const selectedCategoryState: StateDelegate = async (ctx: CallbackQueryContext, factory: IFactory, [key, categoriesIndexRaw]: string[]) => {
@@ -38,12 +37,29 @@ export const selectedCategoryState: StateDelegate = async (ctx: CallbackQueryCon
     const cache = ctx.state.cache as Cache;
     const data = cache.getAndDelete(key);
 
-    const text = data
-        ? await tryPushAmountAndGetText(data, categoriesIndex, ctx.from!.id, factory)
-        : cacheIsEmptyText;
+    const [isSuccess, text] = data
+        ? await tryPushAmountAndGetText(data, categoriesIndex, factory) : [false, cacheIsEmptyText];
 
-    // await ctx.telegram.forwardMessage(5527199508, data?.chatId!, data?.messageId!, { disable_notification: false });
+    if (isSuccess && data) {
+        const { sheetModel } = factory;
+        const category = sheetModel.categories[categoriesIndex];
+        const currentUser = data.userMap.get(data.userId);
 
-    ctx.editMessageText(text, { parse_mode: 'Markdown' });
-    ctx.answerCbQuery();
+        const currentDocument = sheetModel.documents.find((d) => d.id === currentUser?.currentDocumentId);
+        const warningRule = currentDocument?.warnings.find((w) => w.category === category.text && data.amount >= w.amount);
+
+        if (warningRule) {
+            data.userMap.forEach((user, userId) => {
+                if (userId !== data.userId) {
+                    ctx.telegram.sendMessage(user.chatId, 'Смотри, что творит')
+                        .then(() => {
+                            ctx.telegram.forwardMessage(user.chatId, currentUser?.chatId || 0, data.userMessageId!);
+                        });
+                }
+            });
+        }
+    }
+
+    await ctx.editMessageText(text, { parse_mode: 'Markdown' });
+    await ctx.answerCbQuery();
 };
