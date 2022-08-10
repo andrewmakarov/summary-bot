@@ -34,8 +34,8 @@ export const createCategoriesLayout = (key: string) => {
 export const createDocumentsLayout = () => {
     const { sheetModel } = factory;
 
-    return [sheetModel.documents.map(({ id, text }) => ({
-        text,
+    return [sheetModel.documents.map(({ id, name }) => ({
+        text: name,
         callback_data: createParameters(CallbackType.SelectDocumentCommand, id),
     }))];
 };

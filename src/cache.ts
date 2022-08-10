@@ -1,29 +1,32 @@
 import { v1 } from 'uuid';
+import { IUser } from './model/userModel/userModel';
 
 const msInMinutes = 10000;
 let deleteTimerId: NodeJS.Timeout;
 
-export type CacheData = {
+export type CacheItemBody = {
     amount: number;
     description: string;
-
+    userMap: Map<number, Omit<IUser, 'userId'>>;
+    userId: number;
     messageId?: number;
-    chatId?: number;
-    inlineMessageId?: string;
+    userMessageId?: number;
 };
 
-export type CacheItem = { date: number } & CacheData;
+export type WithKey<TSchema> = TSchema & {
+    date: number;
+};
 
 export class Cache {
-    private cacheInternal: Map<string, CacheItem> = new Map();
+    private cacheInternal: Map<string, WithKey<CacheItemBody>> = new Map();
 
-    private onExpiredCacheItem: (item: CacheItem) => void;
+    private onExpiredCacheItem?: (item: WithKey<CacheItemBody>) => void;
 
-    constructor(onExpiredCacheItem: (item: CacheItem) => void) {
+    public onExpiredItem(onExpiredCacheItem:(item: WithKey<CacheItemBody>) => void) {
         this.onExpiredCacheItem = onExpiredCacheItem;
     }
 
-    public add(data: CacheData) {
+    public add(data: CacheItemBody) {
         const guid = v1();
         const date = new Date().valueOf();
 
@@ -35,6 +38,13 @@ export class Cache {
         return guid;
     }
 
+    public update(key: string, obj: Partial<CacheItemBody>) {
+        const item = this.cacheInternal.get(key);
+        if (item) {
+            this.cacheInternal.set(key, { ...item, ...obj });
+        }
+    }
+
     private startClearingCache() {
         if (deleteTimerId) {
             clearTimeout(deleteTimerId);
@@ -43,14 +53,8 @@ export class Cache {
         deleteTimerId = setTimeout(() => this.clearOldItems(), msInMinutes);
     }
 
-    public get(guid: string) {
-        const value = this.cacheInternal.get(guid);
-
-        return value;
-    }
-
     public getAndDelete(guid: string) {
-        const value = this.get(guid);
+        const value = this.cacheInternal.get(guid);
         this.cacheInternal.delete(guid);
 
         return value;
@@ -63,7 +67,7 @@ export class Cache {
         this.cacheInternal.forEach(({ date }, key) => {
             const difference = currentDate.valueOf() - date;
 
-            if (difference > msInMinutes / 2) {
+            if (difference > msInMinutes) {
                 expiredKeys.push(key);
             }
         });
@@ -71,7 +75,7 @@ export class Cache {
         expiredKeys.forEach((key) => {
             const item = this.cacheInternal.get(key);
 
-            if (item) {
+            if (item && this.onExpiredCacheItem) {
                 this.onExpiredCacheItem(item);
             }
 

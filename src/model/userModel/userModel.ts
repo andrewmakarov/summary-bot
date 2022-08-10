@@ -9,12 +9,18 @@ const createClient = () => new MongoClient(getURI(process.env.DB_USER!, process.
 
 export interface IUser {
     userId: number;
-    firstName: string;
-    lastName?: string;
+    userName: string;
     isAdmin: boolean;
     currentDocumentId: string
+    chatId: number;
 }
 export class UserModel {
+    private defaultDocumentId: string;
+
+    constructor(defaultDocumentId: string) {
+        this.defaultDocumentId = defaultDocumentId;
+    }
+
     private async getCollection(): Promise<[MongoClient, Collection<IUser>]> {
         const client = createClient();
         await client.connect();
@@ -22,7 +28,7 @@ export class UserModel {
         return [client, client.db(DB_NAME).collection<IUser>(DB_COLLECTION)];
     }
 
-    async addUser(userId: number, firstName: string, lastName?: string) {
+    async addUser(userId: number, userName: string, chatId: number = 0) {
         const [client, users] = await this.getCollection();
 
         const result = await users.findOne({
@@ -32,10 +38,10 @@ export class UserModel {
         if (!result) {
             await users.insertOne({
                 userId,
-                firstName,
-                lastName,
+                userName,
+                chatId,
+                currentDocumentId: this.defaultDocumentId,
                 isAdmin: false,
-                currentDocumentId: '', // test
             });
         }
 
@@ -52,14 +58,25 @@ export class UserModel {
         client.close();
     }
 
-    async getUsers() {
+    async getUserMap() {
         const client = createClient();
         await client.connect();
 
         const users = client.db(DB_NAME).collection<IUser>(DB_COLLECTION);
 
-        const result = await users.find().toArray();
+        const userList = await users.find().toArray();
         client.close();
+
+        const result = new Map<number, Omit<IUser, 'userId'>>();
+
+        userList.forEach((user) => {
+            result.set(user.userId, {
+                userName: user.userName,
+                chatId: user.chatId,
+                currentDocumentId: user.currentDocumentId,
+                isAdmin: user.isAdmin,
+            });
+        });
 
         return result;
     }

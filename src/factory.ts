@@ -13,8 +13,10 @@ class Factory implements IFactory {
     private sheetModelInternal: SheetModel;
 
     constructor() {
-        this.userModelInternal = new UserModel();
         this.sheetModelInternal = new SheetModel();
+
+        const defaultDocumentId = this.sheetModelInternal.documents[0].id;
+        this.userModelInternal = new UserModel(defaultDocumentId);
     }
 
     get sheetModel(): SheetModel {

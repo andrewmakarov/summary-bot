@@ -2,7 +2,6 @@ import { Context } from 'telegraf';
 import { SheetModel } from '../../model/sheetModel';
 import { UserModel } from '../../model/userModel';
 import { getTodaySummary } from '../../sheetEditor/getTodaySummary';
-import { getUserName } from '../utils';
 import { createCommand } from './base/createCommand';
 
 const command = async (ctx: Context, sheetModel: SheetModel, userModel: UserModel) => {
@@ -10,7 +9,7 @@ const command = async (ctx: Context, sheetModel: SheetModel, userModel: UserMode
 
     const user = await userModel.getUser(ctx.from!.id);
     const document = sheetModel.documents.find((d) => d.id === user!.currentDocumentId);
-    const userName = getUserName(user!.firstName, user!.lastName);
+    const userName = user?.userName || '';
 
     getTodaySummary(document!.id, userName);
 };

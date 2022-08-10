@@ -1,13 +1,26 @@
 import fs from 'fs';
 import { Color, NumberFormat } from 'google-spreadsheet';
 import path from 'path';
-import { MODEL_PATH } from '../constants';
+import { MODEL_DIR_PATH, MODEL_BASE_FILE_NAME } from '../constants';
 
 const ENCODING_TYPE = 'utf8';
 
 export interface ICategory {
     key: string;
     text: string;
+}
+
+export interface IWarning {
+    category: string;
+    amount: number;
+}
+
+export interface IDocument {
+    id: string;
+    name: string;
+    currency: string;
+    warnings: Array<IWarning>;
+    maxAmountLimitAlert: number;
 }
 
 export interface IModel {
@@ -19,11 +32,7 @@ export interface IModel {
     userNameColumn: ICategory;
     modelSheetName: string;
     rowColors: IRowColors;
-    documents: Array<{
-        id: string;
-        text: string;
-        currency: string;
-    }>,
+    documents: Array<IDocument>,
     summary: {
         spent: string
         left: string
@@ -77,11 +86,30 @@ export class SheetModel {
     }
 
     private get modelFilePath() {
-        return path.resolve(__dirname, MODEL_PATH);
+        return path.resolve(__dirname, MODEL_DIR_PATH);
     }
 
     constructor() {
-        const model = fs.readFileSync(this.modelFilePath, ENCODING_TYPE);
-        this.JSONModel = JSON.parse(model);
+        const dirs = fs.readdirSync(this.modelFilePath, { withFileTypes: true });
+        this.JSONModel = this.createModelBaseJSON(dirs);
+
+        dirs.forEach((d) => {
+            if (d.name !== MODEL_BASE_FILE_NAME) {
+                this.JSONModel.documents.push(this.readJSON<IDocument>(d.name));
+            }
+        });
+    }
+
+    private createModelBaseJSON(dirs: fs.Dirent[]) {
+        const modelBaseDirObject = dirs.find((d) => d.name === MODEL_BASE_FILE_NAME);
+
+        return this.readJSON<IModel>(modelBaseDirObject!.name);
+    }
+
+    private readJSON<T>(filePath: string) {
+        const resultPath = path.join(this.modelFilePath, filePath);
+        const modelBaseContent = fs.readFileSync(resultPath, ENCODING_TYPE);
+
+        return JSON.parse(modelBaseContent) as T;
     }
 }
