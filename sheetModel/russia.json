@@ -2,5 +2,6 @@
     "name": "Россия",
     "currency": "₽",
     "id": "fffffff",
-    "warnings": []
+    "warnings": [],
+    "maxAmountLimitAlert": 3500
 }

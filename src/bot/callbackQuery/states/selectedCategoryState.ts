@@ -1,8 +1,9 @@
 import { Cache, WithKey, CacheItemBody } from '../../../cache';
 import { IFactory } from '../../../factory';
+import { SheetModel } from '../../../model/sheetModel';
 import { pushAmountToSheet } from '../../../sheetEditor/pushAmount';
 import {
-    cacheIsEmptyText, formatErrorText, formatSuccessAmountText, tryingAddDInfoText,
+    cacheIsEmptyText, formatErrorText, formatSuccessAmountText, getMaxAmountLimitText, getWarningText, tryingAddDInfoText,
 } from '../../../textUtils';
 import { CallbackQueryContext, StateDelegate } from '../types';
 
@@ -26,6 +27,39 @@ const tryPushAmountAndGetText = async (
     }
 };
 
+const foreachByUsers = (ctx: CallbackQueryContext, cacheData: WithKey<CacheItemBody>, onGetText: (userName: string) => string) => {
+    const { userMap } = cacheData;
+    const currentUser = userMap.get(cacheData.userId);
+
+    userMap.forEach((user, userId) => {
+        if (userId !== cacheData.userId) {
+            const text = onGetText(user.userName);
+
+            ctx.telegram.sendMessage(user.chatId, text, {
+                parse_mode: 'MarkdownV2',
+            }).then(() => {
+                ctx.telegram.forwardMessage(user.chatId, currentUser!.chatId || 0, cacheData.userMessageId!);
+            });
+        }
+    });
+};
+
+const trySendBroadcast = (cacheData: WithKey<CacheItemBody>, categoriesIndex: number, sheetModel: SheetModel, ctx: CallbackQueryContext) => {
+    const category = sheetModel.categories[categoriesIndex];
+    const currentUser = cacheData.userMap.get(cacheData.userId);
+
+    const currentDocument = sheetModel.documents.find((d) => d.id === currentUser?.currentDocumentId);
+    const warningRule = currentDocument?.warnings.find((w) => w.category === category.text && cacheData.amount >= w.amount);
+
+    if (warningRule) {
+        foreachByUsers(ctx, cacheData, (userName) => getWarningText(userName, category.text));
+    }
+
+    if (cacheData.amount >= currentDocument!.maxAmountLimitAlert && !warningRule) {
+        foreachByUsers(ctx, cacheData, (userName) => getMaxAmountLimitText(userName, category.text, cacheData.amount, currentDocument!.currency));
+    }
+};
+
 export const selectedCategoryState: StateDelegate = async (ctx: CallbackQueryContext, factory: IFactory, [key, categoriesIndexRaw]: string[]) => {
     const categoriesIndex = parseInt(categoriesIndexRaw, 10);
 
@@ -35,29 +69,13 @@ export const selectedCategoryState: StateDelegate = async (ctx: CallbackQueryCon
     });
 
     const cache = ctx.state.cache as Cache;
-    const data = cache.getAndDelete(key);
+    const cacheData = cache.getAndDelete(key);
 
-    const [isSuccess, text] = data
-        ? await tryPushAmountAndGetText(data, categoriesIndex, factory) : [false, cacheIsEmptyText];
+    const [isSuccess, text] = cacheData
+        ? await tryPushAmountAndGetText(cacheData, categoriesIndex, factory) : [false, cacheIsEmptyText];
 
-    if (isSuccess && data) {
-        const { sheetModel } = factory;
-        const category = sheetModel.categories[categoriesIndex];
-        const currentUser = data.userMap.get(data.userId);
-
-        const currentDocument = sheetModel.documents.find((d) => d.id === currentUser?.currentDocumentId);
-        const warningRule = currentDocument?.warnings.find((w) => w.category === category.text && data.amount >= w.amount);
-
-        if (warningRule) {
-            data.userMap.forEach((user, userId) => {
-                if (userId !== data.userId) {
-                    ctx.telegram.sendMessage(user.chatId, 'Смотри, что творит')
-                        .then(() => {
-                            ctx.telegram.forwardMessage(user.chatId, currentUser?.chatId || 0, data.userMessageId!);
-                        });
-                }
-            });
-        }
+    if (isSuccess && cacheData) {
+        trySendBroadcast(cacheData, categoriesIndex, factory.sheetModel, ctx);
     }
 
     await ctx.editMessageText(text, { parse_mode: 'Markdown' });

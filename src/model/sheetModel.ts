@@ -20,6 +20,7 @@ export interface IDocument {
     name: string;
     currency: string;
     warnings: Array<IWarning>;
+    maxAmountLimitAlert: number;
 }
 
 export interface IModel {

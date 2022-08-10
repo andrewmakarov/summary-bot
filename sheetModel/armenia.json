@@ -14,5 +14,6 @@
     }, {
         "category": "Универмаг",
         "amount": 3000
-    }]
+    }],
+    "maxAmountLimitAlert": 3500
 }
