@@ -1,3 +1,4 @@
+import { Context } from 'telegraf';
 import { Cache, WithKey, CacheItemBody } from '../../../cache';
 import { IFactory } from '../../../factory';
 import { SheetModel } from '../../../model/sheetModel';
@@ -27,19 +28,19 @@ const tryPushAmountAndGetText = async (
     }
 };
 
-const foreachByUsers = (ctx: CallbackQueryContext, cacheData: WithKey<CacheItemBody>, onGetText: (userName: string) => string) => {
-    const { userMap } = cacheData;
-    const currentUser = userMap.get(cacheData.userId);
+const foreachByUsers = ({ telegram }: Context, cacheData: WithKey<CacheItemBody>, onGetText: (userName: string) => string) => {
+    const { userMap, userMessageId } = cacheData;
+
+    const userInitiatorId = cacheData.userId;
+    const userInitiator = userMap.get(userInitiatorId);
+    const text = onGetText(userInitiator!.userName);
 
     userMap.forEach((user, userId) => {
-        if (userId !== cacheData.userId) {
-            const text = onGetText(user.userName);
+        const isNotInitiator = userId !== userInitiatorId;
 
-            ctx.telegram.sendMessage(user.chatId, text, {
-                parse_mode: 'MarkdownV2',
-            }).then(() => {
-                ctx.telegram.forwardMessage(user.chatId, currentUser!.chatId || 0, cacheData.userMessageId!);
-            });
+        if (isNotInitiator) {
+            telegram.sendMessage(user.chatId, text, { parse_mode: 'MarkdownV2' })
+                .then(() => telegram.forwardMessage(user.chatId, userInitiator!.chatId, userMessageId!));
         }
     });
 };
