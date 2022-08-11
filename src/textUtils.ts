@@ -7,8 +7,8 @@ interface ISummaryConfig {
 export const formatErrorText = (text: string) => `☠️ ${text} ☠️`;
 export const formatSuccessAmountText = (amount: number, currency: string, documentName: string, category: string) => `*${amount}${currency}* успешно занесено в *${category}*(${documentName})`;
 export const getDefaultDocumentText = (documentName: string) => `Документ *${documentName}* установлен по умолчанию`;
-export const getWarningText = (userName: string, category: string) => `😮😮😮 Смотри, что *${userName}* добавил в *${category}*`;
-export const getMaxAmountLimitText = (userName: string, category: string, amount: number, currency: string) => `😮😮😮 Ого, *${userName}* установил рекорд - *${amount}${currency} в ${category}*`;
+export const getWarningText = (userName: string, category: string) => `😮😮😮\nСмотри, что *${userName}* добавил в *${category}*`;
+export const getMaxAmountLimitText = (userName: string, category: string, amount: number, currency: string) => `😮😮😮\nОго, *${userName}* установил рекорд *${amount}${currency} в ${category}*`;
 
 export const amountEnteredWrongFormatText = '_Неправильное_ значение\n*Пример:* 120 Помидоры и огурцы';
 export const selectCategoryText = 'Выбери категорию';
