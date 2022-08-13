@@ -1,5 +1,5 @@
 import { Context, Telegraf } from 'telegraf';
-// import cron from 'node-cron';
+import cron from 'node-cron';
 import { isDebug } from '../utils';
 
 import {
@@ -42,21 +42,21 @@ export default class Bot {
         this.subscribe();
         this.launch();
 
-        // this.dataBase.getUsers().then((users) => {
-        //     users.forEach((u) => {
-        //         this.bot.telegram.sendMessage(u.userId, 'Test');
-        //     });
-        // });
+        cron.schedule('0 20 * * *', () => {
+            // this.dataBase.getUsers().then((users) => {
+            //     users.forEach((u) => {
+            //         this.bot.telegram.sendMessage(u.userId, 'Test');
+            //     });
+            // });
+        });
 
-        // cron.schedule('* */5 * * * *', () => {
-        //     this.dataBase.getUsers().then((users) => {
-        //         users.forEach((u) => {
-        //             this.bot.telegram.sendMessage(u.userId, 'Test');
-        //         });
-        //     });
-        // });
-
-        // this.bot.telegram.sendMessage('429355799', 'sdfsdfsdfsf');
+        cron.schedule('0 15 * * *', () => {
+            // this.dataBase.getUsers().then((users) => {
+            //     users.forEach((u) => {
+            //         this.bot.telegram.sendMessage(u.userId, 'Test');
+            //     });
+            // });
+        });
     }
 
     private launch() {
