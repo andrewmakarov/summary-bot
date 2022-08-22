@@ -1,3 +1,5 @@
+export const getFormattedAmount = (value: number, currency: string) => new Intl.NumberFormat('en-US', { style: 'decimal' }).format(value) + currency;
+
 interface ISummaryConfig {
     spentValue: string;
     leftValue: string;
@@ -23,6 +25,7 @@ export const pleaseWaitText = '👨‍💻 Считаю, подожди';
 export const todaySummaryText = 'отчет за *сегодня*';
 export const weekSummaryText = 'отчет за *неделю*';
 
+// TODO rename
 export const getSummaryText = (config: ISummaryConfig) => `*Потрачено за этот месяц:*
 ${config.spentValue}
 
@@ -31,3 +34,11 @@ ${config.canSaveValue}
 
 *Осталось:*
 ${config.leftValue}`;
+
+export const getHalfDayNotificationText = (userName: string, currency: string, value?: { amount: number }) => {
+    const result = value
+        ? `🫶 Отлично, ты не забываешь вносить расходы!\n💰 Тобой уже потрачено ${getFormattedAmount(value.amount, currency)}`
+        : '⏰ Не забывай заполнять расходы, до сих пор нет никаких данных';
+
+    return result;
+};

@@ -1,6 +1,6 @@
 /* eslint-disable arrow-body-style */
 import { factory } from '../factory';
-import { noSpendingForCurrentPeriodText } from '../textUtils';
+import { getFormattedAmount, noSpendingForCurrentPeriodText } from '../textUtils';
 import { createDocument, getOrCreateSheet } from './private';
 
 const { sheetModel } = factory;
@@ -50,7 +50,7 @@ const createCompiledList = async (documentId: string) => {
     });
 };
 
-const createSummaryMap = async (documentId: string, startDate: Date, endDate: Date) => {
+export const createSummaryMapByUsers = async (documentId: string, startDate: Date, endDate: Date = startDate) => {
     const resultMap = new Map<string, { amount: number, maxAmount: { value: number, category: string, note: string } }>();
     const compiledList = await createCompiledList(documentId);
 
@@ -90,13 +90,9 @@ const createSummaryMap = async (documentId: string, startDate: Date, endDate: Da
     return resultMap;
 };
 
-const getFormattedAmount = (value: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', { style: 'decimal' }).format(value) + currency;
-};
-
 const createDocumentSummary = async (documentId: string, currency: string, startDate: Date, endDate: Date) => {
     const { userModel } = factory;
-    const summaryMap = await createSummaryMap(documentId, startDate, endDate);
+    const summaryMap = await createSummaryMapByUsers(documentId, startDate, endDate);
 
     let result = '';
 
@@ -115,13 +111,15 @@ const createDocumentSummary = async (documentId: string, currency: string, start
     return result;
 };
 
-export const createGeneralSummary = (title: string, startDate: Date, endDate: Date) => {
-    return factory.sheetModel.documents
+export const createGeneralSummary = async (title: string, startDate: Date, endDate: Date = startDate) => {
+    const result = factory.sheetModel.documents
         .filter((d) => d.active)
         .map(async ({ name, id, currency }) => {
             const documentSummary = await createDocumentSummary(id, currency, startDate, endDate);
-            const result = `📚 ${name}: ${title}\n\n${documentSummary}`;
+            const text = `📚 ${name}: ${title}\n\n${documentSummary}`;
 
-            return result;
+            return text;
         });
+
+    return Promise.all(result);
 };
