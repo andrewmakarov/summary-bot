@@ -8,6 +8,7 @@ const ENCODING_TYPE = 'utf8';
 export interface ICategory {
     key: string;
     text: string;
+    icon: string;
 }
 
 export interface IWarning {

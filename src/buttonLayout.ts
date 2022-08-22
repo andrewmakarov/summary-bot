@@ -12,9 +12,9 @@ export const createCategoriesLayout = (key: string) => {
     const result: ILayoutCategory[][] = [];
     const { sheetModel } = factory;
 
-    sheetModel.categories.forEach((category, index) => {
+    sheetModel.categories.forEach(({ icon, text }, index) => {
         const cell = {
-            text: category.text,
+            text: `${icon} ${text}`,
             callback_data: createParameters(CallbackType.SelectCategoryCommand, key, index),
         };
 
