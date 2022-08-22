@@ -1,17 +1,17 @@
 import { Context } from 'telegraf';
-import { SheetModel } from '../../model/sheetModel';
-import { UserModel } from '../../model/userModel';
-import { getTodaySummary } from '../../sheetEditor/getTodaySummary';
+import { createGeneralSummary } from '../../sheetEditor/summaryUtils';
+import { todaySummaryText } from '../../textUtils';
 import { createCommand } from './base/createCommand';
+import { createWaitingMessage } from './base/createWaitingMessage';
 
-const command = async (ctx: Context, sheetModel: SheetModel, userModel: UserModel) => {
-    // ctx.reply('http://google.ru');
+const command = async (ctx: Context) => {
+    const stopWaiting = await createWaitingMessage(ctx);
 
-    const user = await userModel.getUser(ctx.from!.id);
-    const document = sheetModel.documents.find((d) => d.id === user!.currentDocumentId);
-    const userName = user?.userName || '';
+    const todayDate = new Date();
+    const summaryMassages = await createGeneralSummary(todaySummaryText, todayDate, todayDate);
 
-    getTodaySummary(document!.id, userName);
+    summaryMassages.forEach((message) => ctx.reply(message, { parse_mode: 'MarkdownV2' }));
+    stopWaiting();
 };
 
 export const todayCommand = createCommand(command);

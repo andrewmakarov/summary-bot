@@ -1,5 +1,5 @@
 import { Context, Telegraf } from 'telegraf';
-// import cron from 'node-cron';
+import cron from 'node-cron';
 import { isDebug } from '../utils';
 
 import {
@@ -7,7 +7,9 @@ import {
 } from './commands';
 import { callbackQueryCommand } from './callbackQuery/callbackQueryCommand';
 import { Cache, WithKey, CacheItemBody } from '../cache';
-import { timeExpiredText } from '../textUtils';
+import { getHalfDayNotificationText, timeExpiredText, todaySummaryText } from '../textUtils';
+import { factory } from '../factory';
+import { createGeneralSummary, createSummaryMapByUsers } from '../sheetEditor/summaryUtils';
 
 export default class Bot {
     private bot: Telegraf;
@@ -42,21 +44,41 @@ export default class Bot {
         this.subscribe();
         this.launch();
 
-        // this.dataBase.getUsers().then((users) => {
-        //     users.forEach((u) => {
-        //         this.bot.telegram.sendMessage(u.userId, 'Test');
-        //     });
-        // });
+        cron.schedule('0 20 * * *', this.onEndDayBroadcast.bind(this));
 
-        // cron.schedule('* */5 * * * *', () => {
-        //     this.dataBase.getUsers().then((users) => {
-        //         users.forEach((u) => {
-        //             this.bot.telegram.sendMessage(u.userId, 'Test');
-        //         });
-        //     });
-        // });
+        cron.schedule('0 15 * * *', this.onHalfDayBroadcast.bind(this));
+    }
 
-        // this.bot.telegram.sendMessage('429355799', 'sdfsdfsdfsf');
+    private async onEndDayBroadcast() {
+        const { userModel } = factory;
+        const userMap = await userModel.getUserMap();
+
+        const todayDate = new Date();
+        const summaryMassages = await createGeneralSummary(todaySummaryText, todayDate);
+
+        userMap.forEach(async (user) => {
+            summaryMassages.forEach((text) => {
+                this.bot.telegram.sendMessage(user.chatId, text, { parse_mode: 'MarkdownV2' });
+            });
+        });
+    }
+
+    private async onHalfDayBroadcast() {
+        const { userModel, sheetModel } = factory;
+        const userMap = await userModel.getUserMap();
+        const todayDate = new Date();
+
+        sheetModel.documents
+            .filter((d) => d.active)
+            .forEach(async ({ id, currency }) => {
+                const summaryMap = await createSummaryMapByUsers(id, todayDate);
+
+                userMap.forEach(({ userName, chatId }) => {
+                    const text = getHalfDayNotificationText(userName, currency, summaryMap.get(userName));
+
+                    this.bot.telegram.sendMessage(chatId, text, { parse_mode: 'MarkdownV2' });
+                });
+            });
     }
 
     private launch() {
