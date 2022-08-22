@@ -9,7 +9,7 @@ import { callbackQueryCommand } from './callbackQuery/callbackQueryCommand';
 import { Cache, WithKey, CacheItemBody } from '../cache';
 import { getHalfDayNotificationText, timeExpiredText, todaySummaryText } from '../textUtils';
 import { factory } from '../factory';
-import { createGeneralSummary, createSummaryMapByUsers } from '../sheetEditor/summaryUtils';
+import { createGeneralSummary, createFilteredSummaryMap } from '../sheetEditor/summaryUtils';
 
 export default class Bot {
     private bot: Telegraf;
@@ -44,9 +44,9 @@ export default class Bot {
         this.subscribe();
         this.launch();
 
-        cron.schedule('0 20 * * *', this.onEndDayBroadcast.bind(this));
+        cron.schedule('0 17 * * *', this.onEndDayBroadcast.bind(this));
 
-        cron.schedule('0 15 * * *', this.onHalfDayBroadcast.bind(this));
+        cron.schedule('0 10 * * *', this.onHalfDayBroadcast.bind(this));
     }
 
     private async onEndDayBroadcast() {
@@ -71,7 +71,7 @@ export default class Bot {
         sheetModel.documents
             .filter((d) => d.active)
             .forEach(async ({ id, currency }) => {
-                const summaryMap = await createSummaryMapByUsers(id, todayDate);
+                const summaryMap = await createFilteredSummaryMap(id, todayDate);
 
                 userMap.forEach(({ userName, chatId }) => {
                     const text = getHalfDayNotificationText(userName, currency, summaryMap.get(userName));

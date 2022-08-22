@@ -13,6 +13,13 @@ interface ISheetRow {
     note: string;
 }
 
+const trimDate = (date: Date) => {
+    const result = new Date(date);
+    result.setMinutes(0, 0, 0);
+
+    return result;
+};
+
 const createCompiledList = async (documentId: string) => {
     const document = await createDocument(documentId);
     const sheet = await getOrCreateSheet(document);
@@ -50,7 +57,7 @@ const createCompiledList = async (documentId: string) => {
     });
 };
 
-export const createSummaryMapByUsers = async (documentId: string, startDate: Date, endDate: Date = startDate) => {
+export const createFilteredSummaryMap = async (documentId: string, startDate: Date, endDate: Date = startDate) => {
     const resultMap = new Map<string, { amount: number, maxAmount: { value: number, category: string, note: string } }>();
     const compiledList = await createCompiledList(documentId);
 
@@ -66,7 +73,7 @@ export const createSummaryMapByUsers = async (documentId: string, startDate: Dat
     compiledList.forEach((compiledItem) => {
         const { userName } = compiledItem;
 
-        if (compiledItem.date >= startDate && compiledItem.date <= endDate) {
+        if (trimDate(compiledItem.date) >= trimDate(startDate) && trimDate(compiledItem.date) <= trimDate(endDate)) {
             if (!resultMap.has(userName)) {
                 resultMap.set(userName, createDefaultItem());
             }
@@ -90,9 +97,9 @@ export const createSummaryMapByUsers = async (documentId: string, startDate: Dat
     return resultMap;
 };
 
-const createDocumentSummary = async (documentId: string, currency: string, startDate: Date, endDate: Date) => {
+const createTextSummaries = async (documentId: string, currency: string, startDate: Date, endDate: Date) => {
     const { userModel } = factory;
-    const summaryMap = await createSummaryMapByUsers(documentId, startDate, endDate);
+    const summaryMap = await createFilteredSummaryMap(documentId, startDate, endDate);
 
     let result = '';
 
@@ -105,7 +112,7 @@ const createDocumentSummary = async (documentId: string, currency: string, start
     summaryMap.forEach((summary, userName) => {
         result += `*${userName}*
 💰 Всего *${getFormattedAmount(summary.amount, currency)}*
-🔥 Самая дорогая покупка *${getFormattedAmount(summary.maxAmount.value, currency)}* в ${summary.maxAmount.category}'е (${summary.maxAmount.note})\n\n`;
+🔥 Самая дорогая покупка *${getFormattedAmount(summary.maxAmount.value, currency)}* в ${summary.maxAmount.category}'е \\(_${summary.maxAmount.note}_\\)\n\n`;
     });
 
     return result;
@@ -115,7 +122,7 @@ export const createGeneralSummary = async (title: string, startDate: Date, endDa
     const result = factory.sheetModel.documents
         .filter((d) => d.active)
         .map(async ({ name, id, currency }) => {
-            const documentSummary = await createDocumentSummary(id, currency, startDate, endDate);
+            const documentSummary = await createTextSummaries(id, currency, startDate, endDate);
             const text = `📚 ${name}: ${title}\n\n${documentSummary}`;
 
             return text;
