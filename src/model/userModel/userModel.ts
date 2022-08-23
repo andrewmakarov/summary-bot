@@ -1,4 +1,5 @@
 import { Collection, MongoClient, ServerApiVersion } from 'mongodb';
+import { isDebug } from '../../utils';
 import { DB_COLLECTION, DB_NAME, getURI } from './constants';
 
 const createClient = () => new MongoClient(getURI(process.env.DB_USER!, process.env.DB_PASSWORD!), {
@@ -13,7 +14,11 @@ export interface IUser {
     isAdmin: boolean;
     currentDocumentId: string
     chatId: number;
+    isDebug: boolean;
 }
+
+export type IPureUser = Omit<IUser, 'userId' | 'isDebug'>;
+
 export class UserModel {
     private defaultDocumentId: string;
 
@@ -42,6 +47,7 @@ export class UserModel {
                 chatId,
                 currentDocumentId: this.defaultDocumentId,
                 isAdmin: false,
+                isDebug: false,
             });
         }
 
@@ -67,15 +73,19 @@ export class UserModel {
         const userList = await users.find().toArray();
         client.close();
 
-        const result = new Map<number, Omit<IUser, 'userId'>>();
+        const result = new Map<number, IPureUser>();
 
         userList.forEach((user) => {
-            result.set(user.userId, {
-                userName: user.userName,
-                chatId: user.chatId,
-                currentDocumentId: user.currentDocumentId,
-                isAdmin: user.isAdmin,
-            });
+            const isSkipUser = user.isDebug && !isDebug();
+
+            if (!isSkipUser) {
+                result.set(user.userId, {
+                    userName: user.userName,
+                    chatId: user.chatId,
+                    currentDocumentId: user.currentDocumentId,
+                    isAdmin: user.isAdmin,
+                });
+            }
         });
 
         return result;

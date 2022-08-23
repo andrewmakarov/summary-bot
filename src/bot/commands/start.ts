@@ -1,5 +1,5 @@
 import { Context } from 'telegraf';
-import { SheetModel } from '../../model/sheetModel';
+import { SheetModel } from '../../model/sheetModel/sheetModel';
 import { UserModel } from '../../model/userModel';
 import { getUserName } from '../utils';
 import { createCommand } from './base/createCommand';

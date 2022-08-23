@@ -1,5 +1,5 @@
 import { UserModel } from './model/userModel';
-import { SheetModel } from './model/sheetModel';
+import { SheetModel } from './model/sheetModel/sheetModel';
 
 export interface IFactory {
     get sheetModel(): SheetModel;

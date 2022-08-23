@@ -1,6 +1,6 @@
 import { Context } from 'telegraf';
 import { factory } from '../../../factory';
-import { SheetModel } from '../../../model/sheetModel';
+import { SheetModel } from '../../../model/sheetModel/sheetModel';
 import { UserModel } from '../../../model/userModel';
 
 type CommandDelegate = (ctx: Context, sheetModel: SheetModel, userModel: UserModel) => void;

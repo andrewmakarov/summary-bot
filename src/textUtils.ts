@@ -26,7 +26,7 @@ export const todaySummaryText = 'отчет за *сегодня*';
 export const weekSummaryText = 'отчет за *неделю*';
 
 // TODO rename
-export const getSummaryText = (config: ISummaryConfig) => `*Потрачено за этот месяц:*
+export const getSummaryText5 = (config: ISummaryConfig) => `*Потрачено за этот месяц:*
 ${config.spentValue}
 
 *Можно сэкономить в этом месяце:*
@@ -37,8 +37,16 @@ ${config.leftValue}`;
 
 export const getHalfDayNotificationText = (userName: string, currency: string, value?: { amount: number }) => {
     const result = value
-        ? `🫶 Отлично, ты не забываешь вносить расходы!\n💰 Тобой уже потрачено ${getFormattedAmount(value.amount, currency)}`
+        ? `Отлично, ты не забываешь вносить расходы:\n💰 тобой уже потрачено ${getFormattedAmount(value.amount, currency)}`
         : '⏰ Не забывай заполнять расходы, до сих пор нет никаких данных';
 
     return result;
 };
+
+export const getSimplifiedSummaryText = (userName: string, currency: string, value: { amount: number, maxAmount: { value: number, category: string, note: string } }) => `*${userName}*
+💰 Всего *${getFormattedAmount(value.amount, currency)}*
+🔥 Самая дорогая покупка *${getFormattedAmount(value.maxAmount.value, currency)}* в ${value.maxAmount.category}'е \\(_${value.maxAmount.note}_\\)\n\n`;
+
+export const getSimplifiedSummaryTexTitle = (name: string, title: string, documentSummary: string) => `📚 ${name}: ${title}\n\n${documentSummary}`;
+
+export const getSimplifiedSummaryFooterText = (totalAmount: number, currency: string) => `*Всего:* ${totalAmount}${currency}`;

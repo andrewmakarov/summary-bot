@@ -1,5 +1,5 @@
 import { v1 } from 'uuid';
-import { IUser } from './model/userModel/userModel';
+import { IPureUser } from './model/userModel/userModel';
 
 const msInMinutes = 10000;
 let deleteTimerId: NodeJS.Timeout;
@@ -7,13 +7,13 @@ let deleteTimerId: NodeJS.Timeout;
 export type CacheItemBody = {
     amount: number;
     description: string;
-    userMap: Map<number, Omit<IUser, 'userId'>>;
+    userMap: Map<number, IPureUser>;
     userId: number;
     messageId?: number;
     userMessageId?: number;
 };
 
-export type WithKey<TSchema> = TSchema & {
+export type WithKey<T> = T & {
     date: number;
 };
 
