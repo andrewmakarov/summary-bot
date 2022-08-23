@@ -1,6 +1,8 @@
 /* eslint-disable arrow-body-style */
 import { factory } from '../factory';
-import { getFormattedAmount, noSpendingForCurrentPeriodText } from '../textUtils';
+import {
+    getSimplifiedSummaryFooterText, getSimplifiedSummaryText, getSimplifiedSummaryTexTitle, noSpendingForCurrentPeriodText,
+} from '../textUtils';
 import { createDocument, getOrCreateSheet } from './private';
 
 const { sheetModel } = factory;
@@ -102,6 +104,7 @@ const createTextSummaries = async (documentId: string, currency: string, startDa
     const summaryMap = await createFilteredSummaryMap(documentId, startDate, endDate);
 
     let result = '';
+    let totalAmount = 0;
 
     await (await userModel.getUserMap()).forEach(({ userName }) => {
         if (!summaryMap.has(userName)) {
@@ -110,10 +113,11 @@ const createTextSummaries = async (documentId: string, currency: string, startDa
     });
 
     summaryMap.forEach((summary, userName) => {
-        result += `*${userName}*
-💰 Всего *${getFormattedAmount(summary.amount, currency)}*
-🔥 Самая дорогая покупка *${getFormattedAmount(summary.maxAmount.value, currency)}* в ${summary.maxAmount.category}'е \\(_${summary.maxAmount.note}_\\)\n\n`;
+        result += getSimplifiedSummaryText(userName, currency, summary);
+        totalAmount += summary.amount;
     });
+
+    result += getSimplifiedSummaryFooterText(totalAmount, currency);
 
     return result;
 };
@@ -123,9 +127,8 @@ export const createGeneralSummary = async (title: string, startDate: Date, endDa
         .filter((d) => d.active)
         .map(async ({ name, id, currency }) => {
             const documentSummary = await createTextSummaries(id, currency, startDate, endDate);
-            const text = `📚 ${name}: ${title}\n\n${documentSummary}`;
 
-            return text;
+            return getSimplifiedSummaryTexTitle(name, title, documentSummary);
         });
 
     return Promise.all(result);
