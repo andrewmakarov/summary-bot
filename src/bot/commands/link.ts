@@ -1,6 +1,6 @@
 import { Context } from 'telegraf';
 import { SHEET_PATH } from '../../constants';
-import { SheetModel } from '../../model/sheetModel';
+import { SheetModel } from '../../model/sheetModel/sheetModel';
 import { createCommand } from './base/createCommand';
 
 const command = (ctx: Context, sheetModel: SheetModel) => {

@@ -1,6 +1,6 @@
 import { GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
 import { factory } from '../factory';
-import { ICategory } from '../model/sheetModel';
+import { ICategory } from '../model/sheetModel/sheetModel';
 import { createDocument, getOrCreateSheet } from './private';
 
 const { sheetModel } = factory;

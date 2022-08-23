@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { Color, NumberFormat } from 'google-spreadsheet';
 import path from 'path';
-import { MODEL_DIR_PATH, MODEL_BASE_FILE_NAME } from '../constants';
+import { MODEL_DIR_PATH, MODEL_BASE_FILE_NAME } from '../../constants';
 
 const ENCODING_TYPE = 'utf8';
 

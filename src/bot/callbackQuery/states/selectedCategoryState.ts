@@ -1,7 +1,7 @@
 import { Context } from 'telegraf';
 import { Cache, WithKey, CacheItemBody } from '../../../cache';
 import { IFactory } from '../../../factory';
-import { SheetModel } from '../../../model/sheetModel';
+import { SheetModel } from '../../../model/sheetModel/sheetModel';
 import { pushAmountToSheet } from '../../../sheetEditor/pushAmount';
 import {
     cacheIsEmptyText, formatErrorText, formatSuccessAmountText, getMaxAmountLimitText, getWarningText, tryingAddDInfoText,
