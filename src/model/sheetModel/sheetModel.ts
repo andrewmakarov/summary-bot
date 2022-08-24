@@ -9,6 +9,7 @@ export interface ICategory {
     key: string;
     text: string;
     icon: string;
+    keywords: string[];
 }
 
 export interface IWarning {

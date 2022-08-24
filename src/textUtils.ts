@@ -50,3 +50,5 @@ export const getSimplifiedSummaryText = (userName: string, currency: string, val
 export const getSimplifiedSummaryTexTitle = (name: string, title: string, documentSummary: string) => `📚 ${name}: ${title}\n\n${documentSummary}`;
 
 export const getSimplifiedSummaryFooterText = (totalAmount: number, currency: string) => `*Всего:* ${totalAmount}${currency}`;
+
+export const getEstimatedCategoryText = (category: string) => `Возможно ➡️➡️ ${category} ⬅️⬅️ ❔`;
