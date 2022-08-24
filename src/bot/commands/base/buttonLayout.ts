@@ -1,5 +1,6 @@
-import { CallbackType } from './bot/callbackQuery/types';
-import { factory } from './factory';
+import { CallbackType } from '../../callbackQuery/types';
+import { factory } from '../../../factory';
+import { getEstimatedCategoryText } from '../../../textUtils';
 
 export interface ILayoutCategory {
     text: string;
@@ -8,11 +9,21 @@ export interface ILayoutCategory {
 
 const createParameters = (callbackType: CallbackType, ...parameters: unknown[]) => [callbackType, ...parameters].join('|');
 
-export const createCategoriesLayout = (key: string) => {
+export const createCategoriesLayout = (key: string, estimatedCategoryIndex: number) => {
     const result: ILayoutCategory[][] = [];
     const { sheetModel } = factory;
+    const { categories } = sheetModel;
 
-    sheetModel.categories.forEach(({ icon, text }, index) => {
+    if (estimatedCategoryIndex !== -1) {
+        const category = categories[estimatedCategoryIndex];
+
+        result.push([{
+            text: getEstimatedCategoryText(category.text),
+            callback_data: createParameters(CallbackType.SelectCategoryCommand, key, estimatedCategoryIndex),
+        }]);
+    }
+
+    categories.forEach(({ icon, text }, index) => {
         const cell = {
             text: `${icon} ${text}`,
             callback_data: createParameters(CallbackType.SelectCategoryCommand, key, index),

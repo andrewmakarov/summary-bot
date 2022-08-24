@@ -1,5 +1,5 @@
 import { Context } from 'telegraf';
-import { createDocumentsLayout } from '../../buttonLayout';
+import { createDocumentsLayout } from './base/buttonLayout';
 import { createCommand } from './base/createCommand';
 
 const command = (ctx: Context) => {
