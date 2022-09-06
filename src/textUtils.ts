@@ -9,8 +9,6 @@ interface ISummaryConfig {
 export const formatErrorText = (text: string) => `☠️ ${text} ☠️`;
 export const formatSuccessAmountText = (amount: number, currency: string, documentName: string, category: string) => `*${amount}${currency}* успешно занесено в *${category}*(${documentName})`;
 export const getDefaultDocumentText = (documentName: string) => `Документ *${documentName}* установлен по умолчанию`;
-export const getWarningText = (userName: string, category: string) => `😮😮😮\nСмотри, что *${userName}* добавил в *${category}*`;
-export const getMaxAmountLimitText = (userName: string, category: string, amount: number, currency: string) => `😮😮😮\nОго, *${userName}* установил рекорд *${amount}${currency} в ${category}*`;
 
 export const amountEnteredWrongFormatText = '_Неправильное_ значение\n*Пример:* 120 Помидоры и огурцы';
 export const selectCategoryText = 'Выбери категорию';
@@ -47,8 +45,8 @@ export const getSimplifiedSummaryText = (userName: string, currency: string, val
 💰 Всего *${getFormattedAmount(value.amount, currency)}*
 🔥 Самая дорогая покупка *${getFormattedAmount(value.maxAmount.value, currency)}* в ${value.maxAmount.category}'е \\(_${value.maxAmount.note}_\\)\n\n`;
 
-export const getSimplifiedSummaryTexTitle = (name: string, title: string, documentSummary: string) => `📚 ${name}: ${title}\n\n${documentSummary}`;
+export const formatSummaryBlockText = (name: string, title: string, documentSummary: string) => `📚 ${name}: ${title}\n\n${documentSummary}`;
 
-export const getSimplifiedSummaryFooterText = (totalAmount: number, currency: string) => `*Всего:* ${totalAmount}${currency}`;
+export const getTotalSummaryFooterText = (totalAmount: number, currency: string) => `*Всего:* ${getFormattedAmount(totalAmount, currency)}`;
 
 export const getEstimatedCategoryText = (category: string) => `Возможно ➡️➡️ ${category} ⬅️⬅️ ❔`;

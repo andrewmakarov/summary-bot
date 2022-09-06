@@ -84,6 +84,10 @@ export class SheetModel {
         return this.JSONModel.documents;
     }
 
+    get activeDocuments() {
+        return this.documents.filter((d) => d.active);
+    }
+
     get summary() {
         return this.JSONModel.summary;
     }

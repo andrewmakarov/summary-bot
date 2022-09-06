@@ -4,7 +4,7 @@ import { IFactory } from '../../../factory';
 import { SheetModel } from '../../../model/sheetModel/sheetModel';
 import { pushAmountToSheet } from '../../../sheetEditor/pushAmount';
 import {
-    cacheIsEmptyText, formatErrorText, formatSuccessAmountText, getMaxAmountLimitText, getWarningText, tryingAddDInfoText,
+    cacheIsEmptyText, formatErrorText, formatSuccessAmountText, tryingAddDInfoText,
 } from '../../../textUtils';
 import { CallbackQueryContext, StateDelegate } from '../types';
 
@@ -28,19 +28,17 @@ const tryPushAmountAndGetText = async (
     }
 };
 
-const foreachByUsers = ({ telegram }: Context, cacheData: WithKey<CacheItemBody>, onGetText: (userName: string) => string) => {
+const forwardMessageAllUsers = ({ telegram }: Context, cacheData: WithKey<CacheItemBody>) => {
     const { userMap, userMessageId } = cacheData;
 
     const userInitiatorId = cacheData.userId;
     const userInitiator = userMap.get(userInitiatorId);
-    const text = onGetText(userInitiator!.userName);
 
     userMap.forEach((user, userId) => {
         const isNotInitiator = userId !== userInitiatorId;
 
         if (isNotInitiator) {
-            telegram.sendMessage(user.chatId, text, { parse_mode: 'MarkdownV2' })
-                .then(() => telegram.forwardMessage(user.chatId, userInitiator!.chatId, userMessageId!));
+            telegram.forwardMessage(user.chatId, userInitiator!.chatId, userMessageId!);
         }
     });
 };
@@ -53,11 +51,11 @@ const trySendBroadcast = (cacheData: WithKey<CacheItemBody>, categoriesIndex: nu
     const warningRule = currentDocument?.warnings.find((w) => w.category === category.text && cacheData.amount >= w.amount);
 
     if (warningRule) {
-        foreachByUsers(ctx, cacheData, (userName) => getWarningText(userName, category.text));
+        forwardMessageAllUsers(ctx, cacheData);
     }
 
     if (cacheData.amount >= currentDocument!.maxAmountLimitAlert && !warningRule) {
-        foreachByUsers(ctx, cacheData, (userName) => getMaxAmountLimitText(userName, category.text, cacheData.amount, currentDocument!.currency));
+        forwardMessageAllUsers(ctx, cacheData);
     }
 };
 

@@ -1,5 +1,5 @@
 import { Context } from 'telegraf';
-import { createGeneralSummary } from '../../sheetEditor/summaryUtils';
+import { createGeneralSummary } from '../../sheetEditor/summary/summaryUtils';
 import { todaySummaryText } from '../../textUtils';
 import { createCommand } from './base/createCommand';
 import { createWaitingMessage } from './base/createWaitingMessage';
