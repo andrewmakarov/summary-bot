@@ -9,7 +9,8 @@ import { callbackQueryCommand } from './callbackQuery/callbackQueryCommand';
 import { Cache, WithKey, CacheItemBody } from '../cache';
 import { getHalfDayNotificationText, timeExpiredText, todaySummaryText } from '../textUtils';
 import { factory } from '../factory';
-import { createGeneralSummary, createFilteredSummaryMap } from '../sheetEditor/summaryUtils';
+import { createGeneralSummary } from '../sheetEditor/summary/summaryUtils';
+import { createCompiledList, createUserSummaryMap, filterCompiledList } from '../sheetEditor/summary/base';
 
 export default class Bot {
     private bot: Telegraf;
@@ -56,7 +57,7 @@ export default class Bot {
         const todayDate = new Date();
         const summaryMassages = await createGeneralSummary(todaySummaryText, todayDate);
 
-        userMap.forEach(async (user) => {
+        userMap.forEach((user) => {
             summaryMassages.forEach((text) => {
                 this.bot.telegram.sendMessage(user.chatId, text, { parse_mode: 'MarkdownV2' });
             });
@@ -68,16 +69,19 @@ export default class Bot {
         const userMap = await userModel.getUserMap();
         const todayDate = new Date();
 
-        sheetModel.documents
-            .filter((d) => d.active)
+        const onEachUser = (userName: string, chatId: number, currency: string, summaryMap: Map<string, { amount: number }>) => {
+            const text = getHalfDayNotificationText(userName, currency, summaryMap.get(userName));
+
+            this.bot.telegram.sendMessage(chatId, text, { parse_mode: 'MarkdownV2' });
+        };
+
+        sheetModel.activeDocuments
             .forEach(async ({ id, currency }) => {
-                const summaryMap = await createFilteredSummaryMap(id, todayDate);
+                const compiledList = await createCompiledList(id);
+                const filteredList = filterCompiledList(compiledList, todayDate, todayDate);
+                const summaryMap = await createUserSummaryMap(filteredList);
 
-                userMap.forEach(({ userName, chatId }) => {
-                    const text = getHalfDayNotificationText(userName, currency, summaryMap.get(userName));
-
-                    this.bot.telegram.sendMessage(chatId, text, { parse_mode: 'MarkdownV2' });
-                });
+                userMap.forEach(({ userName, chatId }) => onEachUser(userName, chatId, currency, summaryMap));
             });
     }
 
