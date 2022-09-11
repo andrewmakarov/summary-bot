@@ -3,7 +3,7 @@ import { factory } from '../../factory';
 import {
     getTotalSummaryFooterText, getSimplifiedSummaryText, formatSummaryBlockText, noSpendingForCurrentPeriodText, getFormattedAmount,
 } from '../../textUtils';
-import { createCompiledList, createUserSummaryMap, filterCompiledList } from './base';
+import { createCompiledList, createUserSummaryMap, filterCompiledList } from './core';
 
 const createBodySummary = async (documentId: string, currency: string, startDate: Date, endDate: Date) => {
     const { userModel } = factory;

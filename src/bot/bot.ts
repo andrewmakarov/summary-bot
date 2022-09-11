@@ -9,8 +9,8 @@ import { callbackQueryCommand } from './callbackQuery/callbackQueryCommand';
 import { Cache, WithKey, CacheItemBody } from '../cache';
 import { getHalfDayNotificationText, timeExpiredText, todaySummaryText } from '../textUtils';
 import { factory } from '../factory';
-import { createGeneralSummary } from '../sheetEditor/summary/summaryUtils';
-import { createCompiledList, createUserSummaryMap, filterCompiledList } from '../sheetEditor/summary/base';
+import { utils as summaryUtils } from '../sheetEditor/summary';
+import { createCompiledList, createUserSummaryMap, filterCompiledList } from '../sheetEditor/summary/core';
 
 export default class Bot {
     private bot: Telegraf;
@@ -55,7 +55,7 @@ export default class Bot {
         const userMap = await userModel.getUserMap();
 
         const todayDate = new Date();
-        const summaryMassages = await createGeneralSummary(todaySummaryText, todayDate);
+        const summaryMassages = await summaryUtils.createGeneralSummary(todaySummaryText, todayDate);
 
         userMap.forEach((user) => {
             summaryMassages.forEach((text) => {
