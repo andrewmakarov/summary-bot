@@ -8,6 +8,7 @@ declare global {
             PORT: string;
             DB_USER: string;
             DB_PASSWORD: string;
+            LOG_TOKEN: string;
         }
     }
 }

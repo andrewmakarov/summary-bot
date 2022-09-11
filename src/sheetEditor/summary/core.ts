@@ -1,8 +1,6 @@
 import { createDocument, getOrCreateSheet } from '../private';
 import { factory } from '../../factory';
 
-const { sheetModel } = factory;
-
 interface ISheetRow {
     userName: string;
     date: Date;
@@ -28,8 +26,10 @@ const createDateFromString = (rawDate: string) => {
 };
 
 export const createCompiledList = async (documentId: string) => {
+    const { sheetModel } = factory;
     const document = await createDocument(documentId);
     const sheet = await getOrCreateSheet(document);
+
     const { dateColumn, userNameColumn } = sheetModel;
 
     await sheet.loadCells();
@@ -40,10 +40,16 @@ export const createCompiledList = async (documentId: string) => {
         const userName = row[userNameColumn.text].trim();
 
         const categoryConfig = sheetModel.categories.find((c) => !!row[c.text]);
-        const category = categoryConfig!.text;
+
+        if (!categoryConfig) {
+            const text = `Document=${document.title}\nSheet=${sheet.title}\n${row.rowIndex} row without info`;
+            throw new Error(text);
+        }
+
+        const category = categoryConfig.text;
 
         const amount = parseInt((row[category]).replaceAll(',', ''), 10);
-        const { note } = sheet.getCellByA1(`${categoryConfig?.key}${row.rowIndex}`);
+        const { note } = sheet.getCellByA1(`${categoryConfig.key}${row.rowIndex}`);
 
         return {
             date,
