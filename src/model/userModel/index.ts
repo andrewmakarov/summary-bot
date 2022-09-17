@@ -1,2 +1,3 @@
-// eslint-disable-next-line import/prefer-default-export
-export { UserModel } from './userModel';
+import { UserModel, IPureUser, IUser } from './userModel';
+
+export { UserModel, IPureUser, IUser };

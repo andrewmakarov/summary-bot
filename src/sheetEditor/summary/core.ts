@@ -1,5 +1,6 @@
-import { createDocument, getOrCreateSheet } from '../private';
+import { createDocument, getOrCreateSheet } from '../core';
 import { factory } from '../../factory';
+import { fromString } from '../../convertors';
 
 interface ISheetRow {
     userName: string;
@@ -16,15 +17,6 @@ const trimDate = (date: Date) => {
     return result;
 };
 
-const createDateFromString = (rawDate: string) => {
-    const day = parseInt(rawDate, 10);
-
-    const date = new Date();
-    date.setDate(day);
-
-    return date;
-};
-
 export const createCompiledList = async (documentId: string) => {
     const { sheetModel } = factory;
     const document = await createDocument(documentId);
@@ -36,27 +28,24 @@ export const createCompiledList = async (documentId: string) => {
     const rows = await sheet.getRows();
 
     return rows.map((row) => {
-        const date = createDateFromString(row[dateColumn.text]);
-        const userName = row[userNameColumn.text].trim();
+        const date = fromString(row[dateColumn.text]).toDate();
+        const userName = (sheet.getCellByA1(`${userNameColumn.key}${row.rowIndex}`).value as string).trim();
 
         const categoryConfig = sheetModel.categories.find((c) => !!row[c.text]);
 
         if (!categoryConfig) {
-            const text = `Document=${document.title}\nSheet=${sheet.title}\n${row.rowIndex} row without info`;
+            const text = `Document=${document.title}\nSheet=${sheet.title}\n${row.rowIndex} row without info`; // TODO move text
             throw new Error(text);
         }
 
-        const category = categoryConfig.text;
-
-        const amount = parseInt((row[category]).replaceAll(',', ''), 10);
-        const { note } = sheet.getCellByA1(`${categoryConfig.key}${row.rowIndex}`);
+        const { note, value } = sheet.getCellByA1(`${categoryConfig.key}${row.rowIndex}`);
 
         return {
             date,
             userName,
-            category,
-            amount,
             note,
+            category: categoryConfig.text,
+            amount: value,
         } as ISheetRow;
     });
 };

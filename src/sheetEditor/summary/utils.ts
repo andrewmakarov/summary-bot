@@ -32,7 +32,7 @@ const createBodySummary = async (documentId: string, currency: string, startDate
     return result;
 };
 
-const createExpensesMap = async (documentId: string, currency: string, startDate: Date, endDate: Date) => {
+const createExpensesMap = async (documentId: string, currency: string, startDate: Date, endDate: Date) => { // TODO
     const compiledList = filterCompiledList(await createCompiledList(documentId), startDate, endDate);
 
     const map = new Map<string, Array<{ category: string; amount: number }>>();

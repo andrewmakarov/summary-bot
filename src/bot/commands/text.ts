@@ -2,7 +2,7 @@ import { Context } from 'telegraf';
 import { createCategoriesLayout } from './base/buttonLayout';
 import { amountEnteredWrongFormatText, selectCategoryText } from '../../textUtils';
 import { createCommand } from './base/createCommand';
-import { Cache } from '../../cache';
+import { Cache } from '../../cache/cache';
 import { factory } from '../../factory';
 
 type MessageContext = Context & {
