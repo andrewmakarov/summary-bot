@@ -1,34 +1,28 @@
+import { GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
 import { Context } from 'telegraf';
-import { Cache, WithKey, CacheItemBody } from '../../../cache';
+import { Cache, WithKey, ICacheItemBody } from '../../../cache';
 import { IFactory } from '../../../factory';
+import { AmountInfo } from '../../../intermediateTypes';
 import { SheetModel } from '../../../model/sheetModel/sheetModel';
+import { createDocuments } from '../../../sheetEditor/core';
 import { pushAmountToSheet } from '../../../sheetEditor/pushAmount';
+import { testPushedAmount } from '../../../sheetEditor/testPushedAmount';
 import {
     cacheIsEmptyText, formatErrorText, formatSuccessAmountText, tryingAddDInfoText,
 } from '../../../textUtils';
 import { CallbackQueryContext, StateDelegate } from '../types';
 
-const tryPushAmountAndGetText = async (
-    data: WithKey<CacheItemBody>,
-    categoriesIndex: number,
-    factory: IFactory,
-): Promise<[boolean, string]> => {
-    const { sheetModel } = factory;
-    const category = sheetModel.categories[categoriesIndex];
-
+const tryPushAmountAndGetText = async (sheet: GoogleSpreadsheetWorksheet, amountInfo: AmountInfo): Promise<[boolean, number]> => {
     try {
-        const user = data.userMap.get(data.userId);
-        const document = sheetModel.documents.find((d) => d.id === user!.currentDocumentId);
+        const rowIndex = await pushAmountToSheet(sheet, amountInfo.amount, amountInfo.categoryIndex, amountInfo.description, amountInfo.user?.userName);
 
-        await pushAmountToSheet(document!.id, data.amount, categoriesIndex, data.description, user?.userName);
-
-        return [true, formatSuccessAmountText(data.amount, document!.currency, document!.name, category.text)];
+        return [true, rowIndex];
     } catch (e) {
-        return [false, formatErrorText((e as Error).message)];
+        return [true, -1];
     }
 };
 
-const forwardMessageAllUsers = ({ telegram }: Context, cacheData: WithKey<CacheItemBody>) => {
+const forwardMessageAllUsers = ({ telegram }: Context, cacheData: WithKey<ICacheItemBody>) => {
     const { userMap, userMessageId } = cacheData;
 
     const userInitiatorId = cacheData.userId;
@@ -43,7 +37,7 @@ const forwardMessageAllUsers = ({ telegram }: Context, cacheData: WithKey<CacheI
     });
 };
 
-const trySendBroadcast = (cacheData: WithKey<CacheItemBody>, categoriesIndex: number, sheetModel: SheetModel, ctx: CallbackQueryContext) => {
+const trySendBroadcast = (cacheData: WithKey<ICacheItemBody>, categoriesIndex: number, sheetModel: SheetModel, ctx: CallbackQueryContext) => {
     const category = sheetModel.categories[categoriesIndex];
     const currentUser = cacheData.userMap.get(cacheData.userId);
 
@@ -60,23 +54,45 @@ const trySendBroadcast = (cacheData: WithKey<CacheItemBody>, categoriesIndex: nu
 };
 
 export const selectedCategoryState: StateDelegate = async (ctx: CallbackQueryContext, factory: IFactory, [key, categoriesIndexRaw]: string[]) => {
-    const categoriesIndex = parseInt(categoriesIndexRaw, 10);
+    const categoryIndex = parseInt(categoriesIndexRaw, 10);
 
     await ctx.editMessageText(tryingAddDInfoText, {
         parse_mode: 'Markdown',
         reply_markup: undefined,
     });
 
-    const cache = ctx.state.cache as Cache;
-    const cacheData = cache.getAndDelete(key);
-
-    const [isSuccess, text] = cacheData
-        ? await tryPushAmountAndGetText(cacheData, categoriesIndex, factory) : [false, cacheIsEmptyText];
-
-    if (isSuccess && cacheData) {
-        trySendBroadcast(cacheData, categoriesIndex, factory.sheetModel, ctx);
-    }
-
-    await ctx.editMessageText(text, { parse_mode: 'Markdown' });
     await ctx.answerCbQuery();
+
+    const cache = ctx.state.cache as Cache;
+    const cacheData = cache.getAndDelete(key); // TODO rename
+
+    if (cacheData) {
+        const { sheetModel } = factory;
+
+        const user = cacheData.userMap.get(cacheData.userId);
+        const documentModel = sheetModel.documents.find((d) => d.id === user!.currentDocumentId);
+        const [sheet, document] = await createDocuments(documentModel!.id);
+        const amountData = { ...cacheData, ...{ user, categoryIndex } };
+
+        const [isSuccess, rowIndex] = await tryPushAmountAndGetText(sheet, amountData);
+
+        if (isSuccess) {
+            trySendBroadcast(cacheData, categoryIndex, factory.sheetModel, ctx);
+
+            const category = sheetModel.categories[categoryIndex];
+            const text = formatSuccessAmountText(cacheData.amount, documentModel!.currency, documentModel!.name, category.text, '❓');
+
+            await ctx.editMessageText(`${text}`, { parse_mode: 'Markdown' });
+
+            const hasAmountInSheet = await testPushedAmount([sheet, document], rowIndex, amountData);
+            const successMarker = hasAmountInSheet ? '✅' : '❌';
+
+            const text2 = formatSuccessAmountText(cacheData.amount, documentModel!.currency, documentModel!.name, category.text, successMarker);
+            ctx.editMessageText(text2, { parse_mode: 'Markdown' });
+        } else {
+            // await ctx.editMessageText(formatErrorText(cacheIsEmptyText), { parse_mode: 'Markdown' });
+        }
+    } else {
+        await ctx.editMessageText(formatErrorText(cacheIsEmptyText), { parse_mode: 'Markdown' });
+    }
 };

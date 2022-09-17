@@ -6,8 +6,14 @@ interface ISummaryConfig {
     canSaveValue: string;
 }
 
-export const formatErrorText = (text: string) => `☠️ ${text} ☠️`;
-export const formatSuccessAmountText = (amount: number, currency: string, documentName: string, category: string) => `*${amount}${currency}* успешно занесено в *${category}*(${documentName})`;
+export const formatErrorText = (text: string) => `☠️ ${text} ☠️`; // TODO
+export const formatSuccessAmountText = (amount: number, currency: string, documentName: string, category: string, marker: string) => {
+    const formattedAmount = getFormattedAmount(amount, currency);
+
+    const result = `*${formattedAmount}* ➡️ *${category}*\n\n_Документ:_ ${documentName}\n_Статус:_ ${marker}`;
+    return result;
+};
+
 export const getDefaultDocumentText = (documentName: string) => `Документ *${documentName}* установлен по умолчанию`;
 
 export const amountEnteredWrongFormatText = '_Неправильное_ значение\n*Пример:* 120 Помидоры и огурцы';
@@ -35,7 +41,7 @@ ${config.leftValue}`;
 
 export const getHalfDayNotificationText = (userName: string, currency: string, value?: { amount: number }) => {
     const result = value
-        ? `Отлично, ты не забываешь вносить расходы:\n💰 тобой уже потрачено ${getFormattedAmount(value.amount, currency)}`
+        ? `Отлично, ты не забываешь вносить расходы:\n💰 тобой уже потрачено *${getFormattedAmount(value.amount, currency)}*`
         : '⏰ Не забывай заполнять расходы, до сих пор нет никаких данных';
 
     return result;

@@ -6,7 +6,7 @@ import {
     documentCommand, linkCommand, startCommand, summaryCommand, textCommand, todayCommand,
 } from './commands';
 import { callbackQueryCommand } from './callbackQuery/callbackQueryCommand';
-import { Cache, WithKey, CacheItemBody } from '../cache';
+import { Cache, WithKey, ICacheItemBody } from '../cache';
 import { getHalfDayNotificationText, timeExpiredText, todaySummaryText } from '../textUtils';
 import { factory } from '../factory';
 import { utils as summaryUtils } from '../sheetEditor/summary';
@@ -111,7 +111,7 @@ export default class Bot {
         this.cache.onExpiredItem(this.onExpiredCacheItem.bind(this));
     }
 
-    private onExpiredCacheItem(item: WithKey<CacheItemBody>) {
+    private onExpiredCacheItem(item: WithKey<ICacheItemBody>) {
         const { messageId, userMap, userId } = item;
         const currentUser = userMap.get(userId);
 

@@ -1,32 +1,19 @@
 import { v1 } from 'uuid';
-import { IPureUser } from './model/userModel/userModel';
+import { ICacheItemBody, WithKey } from './types';
 
 const msInMinutes = 10000;
 let deleteTimerId: NodeJS.Timeout;
 
-export type CacheItemBody = {
-    amount: number;
-    description: string;
-    userMap: Map<number, IPureUser>;
-    userId: number;
-    messageId?: number;
-    userMessageId?: number;
-};
-
-export type WithKey<T> = T & {
-    date: number;
-};
-
 export class Cache {
-    private cacheInternal: Map<string, WithKey<CacheItemBody>> = new Map();
+    private cacheInternal: Map<string, WithKey<ICacheItemBody>> = new Map();
 
-    private onExpiredCacheItem?: (item: WithKey<CacheItemBody>) => void;
+    private onExpiredCacheItem?: (item: WithKey<ICacheItemBody>) => void;
 
-    public onExpiredItem(onExpiredCacheItem:(item: WithKey<CacheItemBody>) => void) {
+    public onExpiredItem(onExpiredCacheItem:(item: WithKey<ICacheItemBody>) => void) {
         this.onExpiredCacheItem = onExpiredCacheItem;
     }
 
-    public add(data: CacheItemBody) {
+    public add(data: ICacheItemBody) {
         const guid = v1();
         const date = new Date().valueOf();
 
@@ -38,7 +25,7 @@ export class Cache {
         return guid;
     }
 
-    public update(key: string, obj: Partial<CacheItemBody>) {
+    public update(key: string, obj: Partial<ICacheItemBody>) {
         const item = this.cacheInternal.get(key);
         if (item) {
             this.cacheInternal.set(key, { ...item, ...obj });

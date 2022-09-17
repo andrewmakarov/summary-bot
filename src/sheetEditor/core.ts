@@ -1,4 +1,4 @@
-import { GoogleSpreadsheet } from 'google-spreadsheet';
+import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
 import { factory } from '../factory';
 import { isDebug } from '../utils';
 
@@ -17,7 +17,7 @@ export const createDocument = async (documentId: string) => {
     return result;
 };
 
-export const getOrCreateSheetLight = async (document: GoogleSpreadsheet, date?: Date) => {
+export const getOrCreateSheetLight = async (document: GoogleSpreadsheet, date?: Date) => { // TODO ?
     const prefix = isDebug() ? 'test' : (new Date()).getFullYear();
 
     const monthName = sheetModel.months[(date || new Date()).getMonth()];
@@ -42,4 +42,11 @@ export const getOrCreateSheet = async (document: GoogleSpreadsheet, date?: Date)
     await sheet.loadHeaderRow(headerRowIndex);
 
     return sheet;
+};
+
+export const createDocuments = async (documentId: string): Promise<[GoogleSpreadsheetWorksheet, GoogleSpreadsheet]> => {
+    const document = await createDocument(documentId);
+    const sheet = await getOrCreateSheet(document);
+
+    return [sheet, document];
 };

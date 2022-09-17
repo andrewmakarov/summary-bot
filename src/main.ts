@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import dotenv from 'dotenv';
 import Bot from './bot';
-import { Cache } from './cache';
+import { Cache } from './cache/cache';
 import { initLog } from './log';
 
 dotenv.config();
