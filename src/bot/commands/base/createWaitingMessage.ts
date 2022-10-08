@@ -1,5 +1,5 @@
 import { Context } from 'telegraf';
-import { pleaseWaitText } from '../../../textUtils';
+import { pleaseWaitText } from '../../../text/core';
 
 export const createWaitingMessage = async (ctx: Context) => {
     const message = await ctx.reply(pleaseWaitText);

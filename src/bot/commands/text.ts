@@ -1,6 +1,6 @@
 import { Context } from 'telegraf';
 import { createCategoriesLayout } from './base/buttonLayout';
-import { amountEnteredWrongFormatText, selectCategoryText } from '../../textUtils';
+import { amountEnteredWrongFormatText, selectCategoryText } from '../../text/core';
 import { createCommand } from './base/createCommand';
 import { Cache } from '../../cache/cache';
 import { factory } from '../../factory';

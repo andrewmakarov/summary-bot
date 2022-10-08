@@ -1,6 +1,6 @@
 import { CallbackType } from '../../callbackQuery/types';
 import { factory } from '../../../factory';
-import { getEstimatedCategoryText } from '../../../textUtils';
+import { getEstimatedCategoryText } from '../../../text/core';
 
 export interface ILayoutCategory {
     text: string;

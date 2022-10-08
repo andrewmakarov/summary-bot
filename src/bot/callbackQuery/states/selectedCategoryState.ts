@@ -7,9 +7,10 @@ import { SheetModel } from '../../../model/sheetModel/sheetModel';
 import { createDocuments } from '../../../sheetEditor/core';
 import { pushAmountToSheet } from '../../../sheetEditor/pushAmount';
 import { testPushedAmount } from '../../../sheetEditor/testPushedAmount';
+import { Emoji, formatter } from '../../../text';
 import {
-    cacheIsEmptyText, formatErrorText, formatSuccessAmountText, tryingAddDInfoText,
-} from '../../../textUtils';
+    cacheIsEmptyText, tryingAddDInfoText,
+} from '../../../text/core';
 import { CallbackQueryContext, StateDelegate } from '../types';
 
 const tryPushAmountAndGetText = async (sheet: GoogleSpreadsheetWorksheet, amountInfo: AmountInfo): Promise<[boolean, number]> => {
@@ -63,8 +64,7 @@ export const selectedCategoryState: StateDelegate = async (ctx: CallbackQueryCon
 
     await ctx.answerCbQuery();
 
-    const cache = ctx.state.cache as Cache;
-    const cacheData = cache.getAndDelete(key); // TODO rename
+    const cacheData = (ctx.state.cache as Cache).getAndDelete(key);
 
     if (cacheData) {
         const { sheetModel } = factory;
@@ -80,19 +80,19 @@ export const selectedCategoryState: StateDelegate = async (ctx: CallbackQueryCon
             trySendBroadcast(cacheData, categoryIndex, factory.sheetModel, ctx);
 
             const category = sheetModel.categories[categoryIndex];
-            const text = formatSuccessAmountText(cacheData.amount, documentModel!.currency, documentModel!.name, category.text, '❓');
+            const text = formatter.successAmount(cacheData.amount, documentModel!.currency, documentModel!.name, category.text, Emoji.question);
 
             await ctx.editMessageText(`${text}`, { parse_mode: 'Markdown' });
 
-            const hasAmountInSheet = await testPushedAmount([sheet, document], rowIndex, amountData);
-            const successMarker = hasAmountInSheet ? '✅' : '❌';
+            const isAmountPushed = await testPushedAmount([sheet, document], rowIndex, amountData);
+            const markerEmoji = isAmountPushed ? Emoji.done : Emoji.redCross;
 
-            const text2 = formatSuccessAmountText(cacheData.amount, documentModel!.currency, documentModel!.name, category.text, successMarker);
-            ctx.editMessageText(text2, { parse_mode: 'Markdown' });
+            const updatedText = formatter.successAmount(cacheData.amount, documentModel!.currency, documentModel!.name, category.text, markerEmoji);
+            ctx.editMessageText(updatedText, { parse_mode: 'Markdown' });
         } else {
             // await ctx.editMessageText(formatErrorText(cacheIsEmptyText), { parse_mode: 'Markdown' });
         }
     } else {
-        await ctx.editMessageText(formatErrorText(cacheIsEmptyText), { parse_mode: 'Markdown' });
+        ctx.editMessageText(formatter.error(cacheIsEmptyText), { parse_mode: 'Markdown' });
     }
 };

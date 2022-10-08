@@ -1,4 +1,4 @@
-export const getFormattedAmount = (value: number, currency: string) => new Intl.NumberFormat('en-US', { style: 'decimal' }).format(value) + currency;
+import { getFormattedAmount } from './utils';
 
 interface ISummaryConfig {
     spentValue: string;
@@ -6,7 +6,7 @@ interface ISummaryConfig {
     canSaveValue: string;
 }
 
-export const formatErrorText = (text: string) => `☠️ ${text} ☠️`; // TODO
+export const formatErrorText = (text: string) => `☠️ ${text}`; // TODO
 export const formatSuccessAmountText = (amount: number, currency: string, documentName: string, category: string, marker: string) => {
     const formattedAmount = getFormattedAmount(amount, currency);
 

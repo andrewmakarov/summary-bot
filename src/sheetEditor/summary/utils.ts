@@ -1,8 +1,9 @@
 /* eslint-disable arrow-body-style */
 import { factory } from '../../factory';
 import {
-    getTotalSummaryFooterText, getSimplifiedSummaryText, formatSummaryBlockText, noSpendingForCurrentPeriodText, getFormattedAmount,
-} from '../../textUtils';
+    getTotalSummaryFooterText, getSimplifiedSummaryText, formatSummaryBlockText, noSpendingForCurrentPeriodText,
+} from '../../text/core';
+import { amount as formatAmount } from '../../text/utils';
 import { createCompiledList, createUserSummaryMap, filterCompiledList } from './core';
 
 const createBodySummary = async (documentId: string, currency: string, startDate: Date, endDate: Date) => {
@@ -52,7 +53,7 @@ const createExpensesMap = async (documentId: string, currency: string, startDate
         result += `*${userName}*\n`;
 
         expenses.forEach((e) => {
-            result += `${e.category}: ${getFormattedAmount(e.amount, currency)}\n`;
+            result += `${e.category}: ${formatAmount(e.amount, currency)}\n`;
         });
     });
 

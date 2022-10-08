@@ -7,7 +7,7 @@ import {
 } from './commands';
 import { callbackQueryCommand } from './callbackQuery/callbackQueryCommand';
 import { Cache, WithKey, ICacheItemBody } from '../cache';
-import { getHalfDayNotificationText, timeExpiredText, todaySummaryText } from '../textUtils';
+import { getHalfDayNotificationText, timeExpiredText, todaySummaryText } from '../text/core';
 import { factory } from '../factory';
 import { utils as summaryUtils } from '../sheetEditor/summary';
 import { createCompiledList, createUserSummaryMap, filterCompiledList } from '../sheetEditor/summary/core';

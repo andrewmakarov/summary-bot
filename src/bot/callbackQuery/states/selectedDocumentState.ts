@@ -1,5 +1,5 @@
 import { IFactory } from '../../../factory';
-import { getDefaultDocumentText, tryingAddDInfoText } from '../../../textUtils';
+import { getDefaultDocumentText, tryingAddDInfoText } from '../../../text/core';
 import { CallbackQueryContext, StateDelegate } from '../types';
 
 export const selectedDocumentState: StateDelegate = async (ctx: CallbackQueryContext, { sheetModel, userModel }: IFactory, [documentId]: string[]) => {
