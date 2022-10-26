@@ -1,4 +1,7 @@
-import { Emoji } from './emoji';
-import { formatter } from './formatter';
+import { presets } from './presets';
+import { textBuilder } from './textBuilder';
+import { amount, bold, cursive } from './utils';
 
-export { Emoji, formatter };
+export {
+    presets, textBuilder, amount, bold, cursive,
+};

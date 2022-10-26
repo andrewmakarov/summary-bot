@@ -1,6 +1,6 @@
 import { Context } from 'telegraf';
 import { createCategoriesLayout } from './base/buttonLayout';
-import { amountEnteredWrongFormatText, selectCategoryText } from '../../text/core';
+import { presets } from '../../text';
 import { createCommand } from './base/createCommand';
 import { Cache } from '../../cache/cache';
 import { factory } from '../../factory';
@@ -47,14 +47,14 @@ const command = async (ctx: Context) => {
 
         const estimatedCategoryIndex = getEstimatedCategoryIndex(description);
 
-        const message = await ctx.reply(selectCategoryText, {
+        const message = await ctx.reply(presets.selectCategory(), {
             reply_markup: { inline_keyboard: createCategoriesLayout(key, estimatedCategoryIndex) },
             reply_to_message_id: ctx.message?.message_id,
         });
 
         cache.update(key, { messageId: message.message_id });
     } else {
-        ctx.reply(amountEnteredWrongFormatText, {
+        ctx.reply(presets.amountEnteredWrongFormat(), {
             parse_mode: 'MarkdownV2',
             reply_to_message_id: ctx.message?.message_id,
         });

@@ -7,7 +7,7 @@ import {
 } from './commands';
 import { callbackQueryCommand } from './callbackQuery/callbackQueryCommand';
 import { Cache, WithKey, ICacheItemBody } from '../cache';
-import { getHalfDayNotificationText, timeExpiredText, todaySummaryText } from '../text/core';
+import { presets } from '../text';
 import { factory } from '../factory';
 import { utils as summaryUtils } from '../sheetEditor/summary';
 import { createCompiledList, createUserSummaryMap, filterCompiledList } from '../sheetEditor/summary/core';
@@ -55,7 +55,7 @@ export default class Bot {
         const userMap = await userModel.getUserMap();
 
         const todayDate = new Date();
-        const summaryMassages = await summaryUtils.createGeneralSummary(todaySummaryText, todayDate);
+        const summaryMassages = await summaryUtils.createGeneralSummary(presets.todaySummary(), todayDate);
 
         userMap.forEach((user) => {
             summaryMassages.forEach((text) => {
@@ -70,7 +70,7 @@ export default class Bot {
         const todayDate = new Date();
 
         const onEachUser = (userName: string, chatId: number, currency: string, summaryMap: Map<string, { amount: number }>) => {
-            const text = getHalfDayNotificationText(userName, currency, summaryMap.get(userName));
+            const text = presets.halfDayNotification(userName, currency, summaryMap.get(userName));
 
             this.bot.telegram.sendMessage(chatId, text, { parse_mode: 'MarkdownV2' });
         };
@@ -116,7 +116,7 @@ export default class Bot {
         const currentUser = userMap.get(userId);
 
         if (currentUser) {
-            this.bot.telegram.editMessageText(currentUser.chatId, messageId, undefined, timeExpiredText);
+            this.bot.telegram.editMessageText(currentUser.chatId, messageId, undefined, presets.timeExpired());
         }
     }
 }

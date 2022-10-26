@@ -7,10 +7,9 @@ import { SheetModel } from '../../../model/sheetModel/sheetModel';
 import { createDocuments } from '../../../sheetEditor/core';
 import { pushAmountToSheet } from '../../../sheetEditor/pushAmount';
 import { testPushedAmount } from '../../../sheetEditor/testPushedAmount';
-import { Emoji, formatter } from '../../../text';
-import {
-    cacheIsEmptyText, tryingAddDInfoText,
-} from '../../../text/core';
+import { presets } from '../../../text';
+import { textBuilder } from '../../../text/textBuilder';
+import { bold } from '../../../text/utils';
 import { CallbackQueryContext, StateDelegate } from '../types';
 
 const tryPushAmountAndGetText = async (sheet: GoogleSpreadsheetWorksheet, amountInfo: AmountInfo): Promise<[boolean, number]> => {
@@ -57,7 +56,7 @@ const trySendBroadcast = (cacheData: WithKey<ICacheItemBody>, categoriesIndex: n
 export const selectedCategoryState: StateDelegate = async (ctx: CallbackQueryContext, factory: IFactory, [key, categoriesIndexRaw]: string[]) => {
     const categoryIndex = parseInt(categoriesIndexRaw, 10);
 
-    await ctx.editMessageText(tryingAddDInfoText, {
+    await ctx.editMessageText(presets.tryingAddInfo(), {
         parse_mode: 'Markdown',
         reply_markup: undefined,
     });
@@ -80,19 +79,25 @@ export const selectedCategoryState: StateDelegate = async (ctx: CallbackQueryCon
             trySendBroadcast(cacheData, categoryIndex, factory.sheetModel, ctx);
 
             const category = sheetModel.categories[categoryIndex];
-            const text = formatter.successAmount(cacheData.amount, documentModel!.currency, documentModel!.name, category.text, Emoji.question);
+            const text = textBuilder()
+                .amount(cacheData.amount, documentModel!.currency, bold)
+                .rightIcon()
+                .text(category.text, bold)
+                .rightIcon()
+                .text(documentModel!.name)
+                .space();
 
-            await ctx.editMessageText(`${text}`, { parse_mode: 'Markdown' });
+            await ctx.editMessageText(text.clone().icon('❓').done(), { parse_mode: 'Markdown' });
 
             const isAmountPushed = await testPushedAmount([sheet, document], rowIndex, amountData);
-            const markerEmoji = isAmountPushed ? Emoji.done : Emoji.redCross;
+            const resultEmoji = isAmountPushed ? '✅' : '❌';
 
-            const updatedText = formatter.successAmount(cacheData.amount, documentModel!.currency, documentModel!.name, category.text, markerEmoji);
-            ctx.editMessageText(updatedText, { parse_mode: 'Markdown' });
+            ctx.editMessageText(text.clone().icon(resultEmoji).done(), { parse_mode: 'Markdown' });
         } else {
             // await ctx.editMessageText(formatErrorText(cacheIsEmptyText), { parse_mode: 'Markdown' });
         }
     } else {
-        ctx.editMessageText(formatter.error(cacheIsEmptyText), { parse_mode: 'Markdown' });
+        ctx.editMessageText(textBuilder().icon('👨‍💻').space().text(presets.cacheIsEmpty())
+            .done(), { parse_mode: 'Markdown' });
     }
 };

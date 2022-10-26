@@ -1,9 +1,6 @@
 /* eslint-disable arrow-body-style */
 import { factory } from '../../factory';
-import {
-    getTotalSummaryFooterText, getSimplifiedSummaryText, formatSummaryBlockText, noSpendingForCurrentPeriodText,
-} from '../../text/core';
-import { amount as formatAmount } from '../../text/utils';
+import { presets, amount as formatAmount } from '../../text';
 import { createCompiledList, createUserSummaryMap, filterCompiledList } from './core';
 
 const createBodySummary = async (documentId: string, currency: string, startDate: Date, endDate: Date) => {
@@ -19,16 +16,16 @@ const createBodySummary = async (documentId: string, currency: string, startDate
 
     await (await userModel.getUserMap()).forEach(({ userName }) => {
         if (!summaryMap.has(userName)) {
-            result += `*${userName}*\n💰 ${noSpendingForCurrentPeriodText}\n\n`;
+            result += `*${userName}*\n💰 ${presets.noSpendingForCurrentPeriod()}\n\n`;
         }
     });
 
     summaryMap.forEach((summary, userName) => {
-        result += getSimplifiedSummaryText(userName, currency, summary);
+        result += presets.simplifiedSummary(userName, currency, summary);
         totalAmount += summary.amount;
     });
 
-    result += getTotalSummaryFooterText(totalAmount, currency);
+    result += presets.totalSummaryFooter(totalAmount, currency);
 
     return result;
 };
@@ -65,7 +62,7 @@ export const createGeneralSummary = async (title: string, startDate: Date, endDa
         .map(async ({ name, id, currency }) => {
             const body = await createBodySummary(id, currency, startDate, endDate);
 
-            return formatSummaryBlockText(name, title, body);
+            return presets.formatSummaryBlock(name, title, body);
         });
 
     return Promise.all(result);

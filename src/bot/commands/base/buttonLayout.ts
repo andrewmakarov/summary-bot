@@ -1,6 +1,6 @@
 import { CallbackType } from '../../callbackQuery/types';
 import { factory } from '../../../factory';
-import { getEstimatedCategoryText } from '../../../text/core';
+import { presets } from '../../../text';
 
 export interface ILayoutCategory {
     text: string;
@@ -18,7 +18,7 @@ export const createCategoriesLayout = (key: string, estimatedCategoryIndex: numb
         const category = categories[estimatedCategoryIndex];
 
         result.push([{
-            text: getEstimatedCategoryText(category.text),
+            text: presets.estimatedCategoryText(category.text),
             callback_data: createParameters(CallbackType.SelectCategoryCommand, key, estimatedCategoryIndex),
         }]);
     }
