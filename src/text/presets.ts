@@ -121,11 +121,10 @@ export const presets = {
         .text('?')
         .done(),
 
-    totalSummaryFooter: (totalAmount: number, currency: string) => {
-        tb()
-            .text('Всего:', bold)
-            .space()
-            .amount(totalAmount, currency)
-            .done();
-    },
+    totalSummaryFooter: (totalAmount: number, currency: string) => tb()
+        .text('Всего:', bold)
+        .space()
+        .amount(totalAmount, currency)
+        .done()
+    ,
 };
