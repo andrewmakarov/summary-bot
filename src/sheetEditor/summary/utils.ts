@@ -30,6 +30,8 @@ const createBodySummary = async (documentId: string, currency: string, startDate
     return result;
 };
 
+// TODO
+
 const createExpensesMap = async (documentId: string, currency: string, startDate: Date, endDate: Date) => { // TODO
     const compiledList = filterCompiledList(await createCompiledList(documentId), startDate, endDate);
 
