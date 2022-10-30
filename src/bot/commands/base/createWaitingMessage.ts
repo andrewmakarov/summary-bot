@@ -1,8 +1,8 @@
 import { Context } from 'telegraf';
-import { pleaseWaitText } from '../../../textUtils';
+import { presets } from '../../../text';
 
 export const createWaitingMessage = async (ctx: Context) => {
-    const message = await ctx.reply(pleaseWaitText);
+    const message = await ctx.reply(presets.pleaseWait());
 
     return () => {
         ctx.telegram.deleteMessage(message.chat.id, message.message_id);

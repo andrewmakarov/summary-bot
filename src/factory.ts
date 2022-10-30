@@ -3,29 +3,19 @@ import { SheetModel } from './model/sheetModel/sheetModel';
 
 export interface IFactory {
     get sheetModel(): SheetModel;
-
     get userModel(): UserModel;
 }
 
-class Factory implements IFactory {
-    private userModelInternal: UserModel;
+const createFactory = (): IFactory => {
+    const sheetModelInternal = new SheetModel();
 
-    private sheetModelInternal: SheetModel;
+    const defaultDocumentId = sheetModelInternal.documents[0].id;
+    const userModelInternal = new UserModel(defaultDocumentId);
 
-    constructor() {
-        this.sheetModelInternal = new SheetModel();
+    return {
+        sheetModel: sheetModelInternal,
+        userModel: userModelInternal,
+    };
+};
 
-        const defaultDocumentId = this.sheetModelInternal.documents[0].id;
-        this.userModelInternal = new UserModel(defaultDocumentId);
-    }
-
-    get sheetModel(): SheetModel {
-        return this.sheetModelInternal;
-    }
-
-    get userModel(): UserModel {
-        return this.userModelInternal;
-    }
-}
-
-export const factory = new Factory();
+export const factory = createFactory();
