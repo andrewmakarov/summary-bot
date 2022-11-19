@@ -7,10 +7,10 @@ export const selectedDocumentState: StateDelegate = async (ctx: CallbackQueryCon
 
     const document = sheetModel.documents.find((d) => d.id === documentId);
 
-    await ctx.editMessageText(presets.tryingAddInfo());
+    await ctx.editMessageText(presets.static.tryingAddInfo());
 
     await userModel.setDocumentId(userId, documentId);
-    await ctx.editMessageText(presets.defaultDocument(document!.name), { parse_mode: 'Markdown' });
+    await ctx.editMessageText(presets.dynamic.defaultDocument(document!.name), { parse_mode: 'Markdown' });
 
     ctx.answerCbQuery();
 };

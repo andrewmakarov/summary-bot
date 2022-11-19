@@ -16,22 +16,21 @@ const createBodySummary = async (documentId: string, currency: string, startDate
 
     await (await userModel.getUserMap()).forEach(({ userName }) => {
         if (!summaryMap.has(userName)) {
-            result += `*${userName}*\n💰 ${presets.noSpendingForCurrentPeriod()}\n\n`;
+            result += presets.dynamic.noSpendingForCurrentPeriod(userName);
         }
     });
 
     summaryMap.forEach((summary, userName) => {
-        result += presets.simplifiedSummary(userName, currency, summary);
+        result += presets.dynamic.simplifiedSummary(userName, currency, summary);
         totalAmount += summary.amount;
     });
 
-    result += presets.totalSummaryFooter(totalAmount, currency);
+    result += presets.dynamic.totalSummaryFooter(totalAmount, currency);
 
     return result;
 };
 
 // TODO
-
 const createExpensesMap = async (documentId: string, currency: string, startDate: Date, endDate: Date) => { // TODO
     const compiledList = filterCompiledList(await createCompiledList(documentId), startDate, endDate);
 
@@ -64,7 +63,7 @@ export const createGeneralSummary = async (title: string, startDate: Date, endDa
         .map(async ({ name, id, currency }) => {
             const body = await createBodySummary(id, currency, startDate, endDate);
 
-            return presets.formatSummaryBlock(name, title, body);
+            return presets.dynamic.formatSummaryBlock(name, title, body);
         });
 
     return Promise.all(result);

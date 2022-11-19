@@ -4,9 +4,9 @@ import { Cache, WithKey, ICacheItemBody } from '../../../cache';
 import { IFactory } from '../../../factory';
 import { AmountInfo } from '../../../intermediateTypes';
 import { SheetModel } from '../../../model/sheetModel/sheetModel';
-import { createDocuments } from '../../../sheetEditor/core';
-import { pushAmountToSheet } from '../../../sheetEditor/pushAmount';
-import { testPushedAmount } from '../../../sheetEditor/testPushedAmount';
+import { createDocuments } from '../../../sheet/core';
+import { pushAmountToSheet } from '../../../sheet/pushAmount';
+import { testPushedAmount } from '../../../sheet/testPushedAmount';
 import { presets } from '../../../text';
 import { textBuilder } from '../../../text/textBuilder';
 import { bold } from '../../../text/utils';
@@ -56,7 +56,7 @@ const trySendBroadcast = (cacheData: WithKey<ICacheItemBody>, categoriesIndex: n
 export const selectedCategoryState: StateDelegate = async (ctx: CallbackQueryContext, factory: IFactory, [key, categoriesIndexRaw]: string[]) => {
     const categoryIndex = parseInt(categoriesIndexRaw, 10);
 
-    await ctx.editMessageText(presets.tryingAddInfo(), {
+    await ctx.editMessageText(presets.static.tryingAddInfo(), {
         parse_mode: 'Markdown',
         reply_markup: undefined,
     });
@@ -97,7 +97,7 @@ export const selectedCategoryState: StateDelegate = async (ctx: CallbackQueryCon
             // await ctx.editMessageText(formatErrorText(cacheIsEmptyText), { parse_mode: 'Markdown' });
         }
     } else {
-        ctx.editMessageText(textBuilder().icon('👨‍💻').space().text(presets.cacheIsEmpty())
+        ctx.editMessageText(textBuilder().icon('👨‍💻').space().text(presets.static.cacheIsEmpty())
             .done(), { parse_mode: 'Markdown' });
     }
 };
