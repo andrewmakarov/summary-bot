@@ -98,7 +98,7 @@ export class SheetModel {
 
     constructor() {
         const dirs = fs.readdirSync(this.modelFilePath, { withFileTypes: true });
-        this.JSONModel = this.createModelBaseJSON(dirs);
+        this.JSONModel = this.readBaseModel(dirs);
 
         dirs.forEach((d) => {
             if (d.name !== MODEL_BASE_FILE_NAME) {
@@ -107,7 +107,7 @@ export class SheetModel {
         });
     }
 
-    private createModelBaseJSON(dirs: fs.Dirent[]) {
+    private readBaseModel(dirs: fs.Dirent[]) {
         const modelBaseDirObject = dirs.find((d) => d.name === MODEL_BASE_FILE_NAME);
 
         return this.readJSON<IModel>(modelBaseDirObject!.name);

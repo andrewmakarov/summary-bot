@@ -57,6 +57,10 @@ class TextBuilderAPI {
         return new TextBuilderAPI(this.result);
     }
 
+    merge(text: TextBuilderAPI) {
+        return this.text(text.done());
+    }
+
     done() {
         return this.result;
     }

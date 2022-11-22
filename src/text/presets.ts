@@ -10,7 +10,7 @@ export const presets = {
         formatSummaryBlock: (name: string, title: string, documentSummary: string) => `${icon('📚')} ${name}: ${title}\n\n${documentSummary}`,
 
         totalSummaryFooter: (totalAmount: number, currency: string) => `**Всего:** ${amount(totalAmount, currency)}`,
-        estimatedCategoryText: (category: string) => `Возможно **${category}**?`,
+        estimatedCategoryText: (category: string) => `${icon('💁')} ${category}?`,
 
         halfDayNotification: (currency: string, value?: { amount: number }) => {
             if (value) {
@@ -39,11 +39,11 @@ export const presets = {
             .done(),
     },
     static: {
-        tryingAddInfo: () => `${icon('👨‍💻')} Пытаюсь добавить данные`,
+        tryingAddInfo: () => `${icon('👨‍💻')} Пытаюсь добавить данные...`,
         selectCategory: () => 'Выбери категорию',
 
         timeExpired: () => `${icon('🤷‍♂️')} Я не дождался, начни сначала`,
-        pleaseWait: () => `${icon('👨‍💻')} Считаю, подожди`,
+        pleaseWait: () => `${icon('👨‍💻')} Считаю, подожди...`,
 
         todaySummary: () => 'отчет за **сегодня**',
         weekSummaryText: () => 'отчет за **неделю**',
