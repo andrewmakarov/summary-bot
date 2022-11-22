@@ -4,12 +4,13 @@ import { Cache, WithKey, ICacheItemBody } from '../../../cache';
 import { IFactory } from '../../../factory';
 import { AmountInfo } from '../../../intermediateTypes';
 import { SheetModel } from '../../../model/sheetModel/sheetModel';
-import { createDocuments } from '../../../sheetEditor/core';
-import { pushAmountToSheet } from '../../../sheetEditor/pushAmount';
-import { testPushedAmount } from '../../../sheetEditor/testPushedAmount';
+import { createDocuments } from '../../../sheet/core';
+import { pushAmountToSheet } from '../../../sheet/pushAmount';
+import { testPushedAmount } from '../../../sheet/testPushedAmount';
 import { presets } from '../../../text';
 import { textBuilder } from '../../../text/textBuilder';
 import { bold } from '../../../text/utils';
+import { editText } from '../../decorators';
 import { CallbackQueryContext, StateDelegate } from '../types';
 
 const tryPushAmountAndGetText = async (sheet: GoogleSpreadsheetWorksheet, amountInfo: AmountInfo): Promise<[boolean, number]> => {
@@ -18,7 +19,7 @@ const tryPushAmountAndGetText = async (sheet: GoogleSpreadsheetWorksheet, amount
 
         return [true, rowIndex];
     } catch (e) {
-        return [true, -1];
+        return [false, -1];
     }
 };
 
@@ -56,7 +57,7 @@ const trySendBroadcast = (cacheData: WithKey<ICacheItemBody>, categoriesIndex: n
 export const selectedCategoryState: StateDelegate = async (ctx: CallbackQueryContext, factory: IFactory, [key, categoriesIndexRaw]: string[]) => {
     const categoryIndex = parseInt(categoriesIndexRaw, 10);
 
-    await ctx.editMessageText(presets.tryingAddInfo(), {
+    await ctx.editMessageText(presets.static.tryingAddInfo(), {
         parse_mode: 'Markdown',
         reply_markup: undefined,
     });
@@ -80,24 +81,27 @@ export const selectedCategoryState: StateDelegate = async (ctx: CallbackQueryCon
 
             const category = sheetModel.categories[categoryIndex];
             const text = textBuilder()
+                .space()
                 .amount(cacheData.amount, documentModel!.currency, bold)
                 .rightIcon()
-                .text(category.text, bold)
-                .rightIcon()
-                .text(documentModel!.name)
-                .space();
+                .text(category.text, bold);
 
-            await ctx.editMessageText(text.clone().icon('❓').done(), { parse_mode: 'Markdown' });
+            editText(ctx, textBuilder().icon('☑️').merge(text).done());
 
             const isAmountPushed = await testPushedAmount([sheet, document], rowIndex, amountData);
             const resultEmoji = isAmountPushed ? '✅' : '❌';
 
-            ctx.editMessageText(text.clone().icon(resultEmoji).done(), { parse_mode: 'Markdown' });
+            editText(ctx, textBuilder().icon(resultEmoji).merge(text).done());
         } else {
             // await ctx.editMessageText(formatErrorText(cacheIsEmptyText), { parse_mode: 'Markdown' });
         }
     } else {
-        ctx.editMessageText(textBuilder().icon('👨‍💻').space().text(presets.cacheIsEmpty())
-            .done(), { parse_mode: 'Markdown' });
+        const text = textBuilder()
+            .icon('👨‍💻')
+            .space()
+            .text(presets.static.cacheIsEmpty())
+            .done();
+
+        editText(ctx, text);
     }
 };

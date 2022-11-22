@@ -18,7 +18,7 @@ export const createCategoriesLayout = (key: string, estimatedCategoryIndex: numb
         const category = categories[estimatedCategoryIndex];
 
         result.push([{
-            text: presets.estimatedCategoryText(category.text),
+            text: presets.dynamic.estimatedCategoryText(category.text),
             callback_data: createParameters(CallbackType.SelectCategoryCommand, key, estimatedCategoryIndex),
         }]);
     }

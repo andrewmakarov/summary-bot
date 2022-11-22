@@ -47,14 +47,14 @@ const command = async (ctx: Context) => {
 
         const estimatedCategoryIndex = getEstimatedCategoryIndex(description);
 
-        const message = await ctx.reply(presets.selectCategory(), {
+        const message = await ctx.reply(presets.static.selectCategory(), {
             reply_markup: { inline_keyboard: createCategoriesLayout(key, estimatedCategoryIndex) },
             reply_to_message_id: ctx.message?.message_id,
         });
 
         cache.update(key, { messageId: message.message_id });
     } else {
-        ctx.reply(presets.amountEnteredWrongFormat(), {
+        ctx.reply(presets.static.amountEnteredWrongFormat(), {
             parse_mode: 'MarkdownV2',
             reply_to_message_id: ctx.message?.message_id,
         });
