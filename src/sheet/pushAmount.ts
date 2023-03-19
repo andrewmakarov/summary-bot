@@ -8,12 +8,12 @@ interface IRowData {
     [key: string]: string | number
 }
 
-const writeNote = (sheet: GoogleSpreadsheetWorksheet, category: ICategory, rowIndex: number, description: string) => {
+const addNoteToCell = (sheet: GoogleSpreadsheetWorksheet, category: ICategory, rowIndex: number, description: string) => {
     const cell = sheet.getCellByA1(`${category.key}${rowIndex}`);
     cell.note = description;
 };
 
-const fillBackGround = (sheet: GoogleSpreadsheetWorksheet, rowIndex: number) => {
+const fillBackColorRow = (sheet: GoogleSpreadsheetWorksheet, rowIndex: number) => {
     const { color1, color2 } = sheetModel.rowColors;
     const targetColor = (new Date()).getDate() % 2 > 0 ? color1 : color2;
     const columns = [sheetModel.userNameColumn, sheetModel.dateColumn, ...sheetModel.categories];
@@ -24,35 +24,32 @@ const fillBackGround = (sheet: GoogleSpreadsheetWorksheet, rowIndex: number) => 
     });
 };
 
-const createRow = (amount:number, categoryIndex: number, userName: string): IRowData => {
+const createDataRow = (amount:number, categoryIndex: number, userName: string): IRowData => {
     const result = {};
     const category = sheetModel.categories[categoryIndex];
 
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    result['Key'] = new Date().valueOf(); // TODO
+    result[sheetModel.userNameColumn.text] = userName;
     result[sheetModel.dateColumn.text] = (new Date()).toDateString();
     result[category.text] = amount;
-    result[sheetModel.userNameColumn.text] = userName;
 
     return result;
 };
 
-const pushAmountCore = async (sheet: GoogleSpreadsheetWorksheet, amount: number, categoryIndex: number, description: string, userName: string) => {
+export const addAmountToSheet = async (sheet: GoogleSpreadsheetWorksheet, amount: number, categoryIndex: number, description: string, userName: string = '') => {
     const category = sheetModel.categories[categoryIndex];
 
-    const row = createRow(amount, categoryIndex, userName);
-    const { rowIndex } = await sheet.addRow(row);
+    const dataRow = createDataRow(amount, categoryIndex, userName);
+    const sheetRow = await sheet.addRow(dataRow);
 
     await sheet.loadCells();
 
-    writeNote(sheet, category, rowIndex, description);
-    fillBackGround(sheet, rowIndex);
+    addNoteToCell(sheet, category, sheetRow.rowIndex, description);
+    fillBackColorRow(sheet, sheetRow.rowIndex);
 
     await sheet.saveUpdatedCells();
     await sheet.resetLocalCache(false);
 
-    return rowIndex;
-};
-
-export const pushAmountToSheet = async (sheet: GoogleSpreadsheetWorksheet, amount: number, categoryIndex: number, description: string, userName: string = '') => {
-    const result = await pushAmountCore(sheet, amount, categoryIndex, description, userName);
-    return result;
+    return dataRow.Key as number;
 };
