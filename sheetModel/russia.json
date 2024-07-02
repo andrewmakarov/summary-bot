@@ -1,8 +1,21 @@
 {
     "name": "Россия",
     "currency": "₽",
-    "id": "1CgxBv0l7PyT4A5ZFi8rqDJDUXvcxP4d4cS3iqFaGZBc",
+    "id": "1--A4V9CYQlEOfphGPU-EWKI9KbRN9UNNcNcHu09e8VQ",
+    "warnings": [{
+        "category": "Рестораны",
+        "amount": 1000
+    }, {
+        "category": "Тимофей",
+        "amount": 1000
+    }, {
+        "category": "Другое",
+        "amount": 1000
+    }, {
+        "category": "Универмаг",
+        "amount": 3000
+    }],
     "warnings": [],
     "maxAmountLimitAlert": 3500,
-    "active": false
+    "active": true
 }
