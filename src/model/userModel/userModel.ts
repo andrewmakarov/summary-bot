@@ -19,6 +19,7 @@ export interface IUser {
 
 export type IPureUser = Omit<IUser, 'userId' | 'isDebug'>;
 
+// TODO
 export class UserModel {
     private defaultDocumentId: string;
 
