@@ -5,21 +5,20 @@ import { IFactory } from '../../../factory';
 import { AmountInfo } from '../../../intermediateTypes';
 import { SheetModel } from '../../../model/sheetModel/sheetModel';
 import { createDocuments } from '../../../sheet/core';
-import { addAmountToSheet } from '../../../sheet/pushAmount';
-import { checkIsAmountAdded } from '../../../sheet/checkIsAmountAdded';
+import { pushAmountToSheet } from '../../../sheet/pushAmount';
+import { testPushedAmount } from '../../../sheet/testPushedAmount';
 import { presets } from '../../../text';
 import { textBuilder } from '../../../text/textBuilder';
 import { bold } from '../../../text/utils';
-import { botDecorator } from '../../decorators';
+import { editText } from '../../decorators';
 import { CallbackQueryContext, StateDelegate } from '../types';
 
 const tryPushAmountAndGetText = async (sheet: GoogleSpreadsheetWorksheet, amountInfo: AmountInfo): Promise<[boolean, number]> => {
     try {
-        const rowKey = await addAmountToSheet(sheet, amountInfo.amount, amountInfo.categoryIndex, amountInfo.description, amountInfo.user?.userName);
+        const rowIndex = await pushAmountToSheet(sheet, amountInfo.amount, amountInfo.categoryIndex, amountInfo.description, amountInfo.user?.userName);
 
-        return [true, rowKey];
+        return [true, rowIndex];
     } catch (e) {
-        // senla
         return [false, -1];
     }
 };
@@ -75,7 +74,7 @@ export const selectedCategoryState: StateDelegate = async (ctx: CallbackQueryCon
         const [sheet, document] = await createDocuments(documentModel!.id);
         const amountData = { ...cacheData, ...{ user, categoryIndex } };
 
-        const [isSuccess, rowKey] = await tryPushAmountAndGetText(sheet, amountData);
+        const [isSuccess, rowIndex] = await tryPushAmountAndGetText(sheet, amountData);
 
         if (isSuccess) {
             trySendBroadcast(cacheData, categoryIndex, factory.sheetModel, ctx);
@@ -87,16 +86,22 @@ export const selectedCategoryState: StateDelegate = async (ctx: CallbackQueryCon
                 .rightIcon()
                 .text(category.text, bold);
 
-            await botDecorator(ctx).editText(textBuilder().icon('☑️').merge(text).done());
+            editText(ctx, textBuilder().icon('☑️').merge(text).done());
 
-            const isAmountPushed = await checkIsAmountAdded([sheet, document], rowKey, amountData);
+            const isAmountPushed = await testPushedAmount([sheet, document], rowIndex, amountData);
             const resultEmoji = isAmountPushed ? '✅' : '❌';
 
-            botDecorator(ctx).editText(textBuilder().icon(resultEmoji).merge(text).done());
+            editText(ctx, textBuilder().icon(resultEmoji).merge(text).done());
         } else {
-            botDecorator(ctx).errorTo.currentText();
+            // await ctx.editMessageText(formatErrorText(cacheIsEmptyText), { parse_mode: 'Markdown' });
         }
     } else {
-        botDecorator(ctx).errorTo.currentText();
+        const text = textBuilder()
+            .icon('👨‍💻')
+            .space()
+            .text(presets.static.cacheIsEmpty())
+            .done();
+
+        editText(ctx, text);
     }
 };

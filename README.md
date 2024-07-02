@@ -1,1 +1,1 @@
-# summary-bot-v2
+# summary-bot

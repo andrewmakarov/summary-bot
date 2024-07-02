@@ -1,5 +1,5 @@
 import { factory } from '../factory';
-import { loadDocument, getOrCreateSheet } from './core';
+import { createDocument, getOrCreateSheetLight } from './core';
 
 const { sheetModel } = factory;
 
@@ -8,8 +8,8 @@ export const getMonthSummary = async (documentId: string) => { // TODO
         range, spent, left, canSave,
     } = sheetModel.summary;
 
-    const document = await loadDocument(documentId);
-    const sheet = await getOrCreateSheet(document, { loadHeaderRow: false });
+    const document = await createDocument(documentId);
+    const sheet = await getOrCreateSheetLight(document);
 
     await sheet.loadCells(range);
 

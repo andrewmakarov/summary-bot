@@ -50,8 +50,6 @@ export const presets = {
 
         amountEnteredWrongFormat: () => 'Неправильное значение\n**Пример:** 120 Помидоры и огурцы',
 
-        somethingWasWrong: () => `${icon('🐞')} something was wrong`,
-
         cacheIsEmpty: () => 'Не нашелся обьект в кеше', // TODO
     },
 };

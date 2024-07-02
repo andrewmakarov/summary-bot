@@ -1,13 +1,8 @@
-import { Context } from 'telegraf';
-import { presets } from '../text';
+// import { CallbackQueryContext, StateDelegate } from '../types';
+
+import { CallbackQueryContext } from './callbackQuery/types';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const parse_mode = 'Markdown';
 
-export const botDecorator = (ctx: Context) => ({
-    editText: (message: string) => ctx.editMessageText(message, { parse_mode }),
-
-    errorTo: {
-        currentText: () => ctx.editMessageText(presets.static.somethingWasWrong()),
-    },
-});
+export const editText = (ctx: CallbackQueryContext, message: string) => ctx.editMessageText(message, { parse_mode });

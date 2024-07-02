@@ -27,11 +27,9 @@ export interface IDocument {
 }
 
 export interface IModel {
-    headerRowIndex: number;
-    systemColumns: Array<string>;
-
     months: Array<string>;
     categories: Array<ICategory>
+    headerRowIndex: number;
     defaultFormat: NumberFormat;
     dateColumn: ICategory;
     userNameColumn: ICategory;
@@ -51,12 +49,8 @@ export interface IRowColors {
     color2: Color;
 }
 
-export class SheetModel { // TODO deprecated
+export class SheetModel {
     private JSONModel: IModel;
-
-    get systemColumns() {
-        return this.JSONModel.systemColumns;
-    }
 
     get rowColors() {
         return this.JSONModel.rowColors;

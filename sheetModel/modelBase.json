@@ -1,17 +1,4 @@
 {
-    "headerRowIndex": 9,
-    "systemColumns": ["Key", "Имя", "Дата"],
-    
-    "userNameColumn": {
-        "key": "A",
-        "text": "Имя"
-    },
-    "dateColumn": {
-        "key": "B",
-        "text": "Дата"
-    },
-
-
     "summary": {
         "spent": "Потрачено",
         "left": "Осталось",
@@ -34,6 +21,15 @@
     },
     "documents": [],
     "modelSheetName": "Sample",
+    "userNameColumn": {
+        "key": "A",
+        "text": "Имя"
+    },
+    "dateColumn": {
+        "key": "B",
+        "text": "Дата"
+    },
+    "headerRowIndex": 9,
     "categories": [{
         "key": "C",
         "text": "Универмаг",

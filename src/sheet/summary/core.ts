@@ -1,4 +1,4 @@
-import { loadDocument, getOrCreateSheet } from '../core';
+import { createDocument, getOrCreateSheet } from '../core';
 import { factory } from '../../factory';
 import { fromString } from '../../convertors';
 
@@ -19,7 +19,7 @@ const trimDate = (date: Date) => {
 
 export const createCompiledList = async (documentId: string) => {
     const { sheetModel } = factory;
-    const document = await loadDocument(documentId);
+    const document = await createDocument(documentId);
     const sheet = await getOrCreateSheet(document);
 
     const { dateColumn, userNameColumn } = sheetModel;
@@ -28,7 +28,6 @@ export const createCompiledList = async (documentId: string) => {
     const rows = await sheet.getRows();
 
     return rows.map((row) => {
-        const datee = sheet.getCellByA1(`${dateColumn.key}${row.rowIndex}`);
         const date = fromString(row[dateColumn.text]).toDate();
         const userName = (sheet.getCellByA1(`${userNameColumn.key}${row.rowIndex}`).value as string).trim();
 

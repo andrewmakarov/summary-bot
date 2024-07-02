@@ -1,6 +1,5 @@
 import { Context, Telegraf } from 'telegraf';
 import cron from 'node-cron';
-import { Worker } from 'worker_threads';
 import { isDebug } from '../utils';
 
 import {
@@ -49,10 +48,6 @@ export default class Bot {
         cron.schedule('0 17 * * *', this.onEndDayBroadcast.bind(this));
 
         cron.schedule('0 10 * * *', this.onHalfDayBroadcast.bind(this));
-
-        const worker = new Worker('./src/crawler.ts');
-
-        // worker.postMessage()
     }
 
     private async onEndDayBroadcast() {

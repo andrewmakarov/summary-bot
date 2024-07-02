@@ -8,12 +8,13 @@ export const initLog = () => {
     });
 };
 
-export const log = (userId: string, text: string) => {
-    Sentry.withScope((scope) => {
-        scope.setLevel('error');
-        scope.setUser({
-            id: userId,
-        });
-        Sentry.captureMessage(text);
-    });
-};
+// export const logError = (userId: string, text: string) => {
+//     Sentry.withScope((scope) => {
+//         scope.setTag("area", "checkout");
+//         scope.setLevel('error');
+//         scope.setUser({
+//             id: userId
+//         });
+//         Sentry.captureMessage(text);
+//     }
+// };
